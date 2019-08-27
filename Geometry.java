@@ -1320,10 +1320,277 @@ public class Geometry {
 
 		};
 
-	private void contour_crank(){ };
+	private void contour_crank(){
+		
+		Double crank_attachment_radius = 20.0;
+		Double crank_overlap_angle = Math.atan( getPoint(W.G).getY() / getPoint(W.G).getX() );
 
-	private void compute_rear_fork(){}
-	private void compute_rear_fork_distances(){}
+		getPoint(W.Cal).setLocation( - crank_attachment_radius, 0);
+		getPoint(W.Car).setLocation( crank_attachment_radius, 0);
+		getPoint(W.Cel).setLocation( 0, -( parameters.get(Prm.CL) + parameters.get(Prm.CER)));
+		getPoint(W.Cem).setLocation( 0, - parameters.get(Prm.CL));
+		getPoint(W.Cell).setLocation( 
+			getPoint(W.Cem).getX() - parameters.get(Prm.CER),
+			getPoint(W.Cem).getY());
+		getPoint(W.Celr).setLocation( 
+			getPoint(W.Cem).getX() + parameters.get(Prm.CER),
+			getPoint(W.Cem).getY());
+		getPoint(W.Cat).setLocation( 
+			-Math.sin( crank_overlap_angle ) * parameters.get(Prm.CER),
+			Math.cos( crank_overlap_angle ) * parameters.get(Prm.CER));
+		getPoint(W.Cab).setLocation( 
+			Math.sin( crank_overlap_angle ) * parameters.get(Prm.CER),
+			-Math.cos( crank_overlap_angle ) * parameters.get(Prm.CER));
+		getPoint(W.Ceu).setLocation( 
+			Math.cos( crank_overlap_angle ) * (parameters.get(Prm.CL) + parameters.get(Prm.CER)),
+			Math.sin( crank_overlap_angle ) * (parameters.get(Prm.CL) + parameters.get(Prm.CER)));
+		getPoint(W.Ceuu).setLocation( 
+			getPoint(W.H).getX() - Math.sin( crank_overlap_angle ) * parameters.get(Prm.CER),
+			getPoint(W.H).getY() + Math.cos( crank_overlap_angle ) * parameters.get(Prm.CER));
+		getPoint(W.Ceul).setLocation( 
+			getPoint(W.H).getX() + Math.sin( crank_overlap_angle ) * parameters.get(Prm.CER),
+			getPoint(W.H).getY() - Math.cos( crank_overlap_angle ) * parameters.get(Prm.CER));
+
+
+		// Toeclip end point
+		getPoint(W.Tce).setLocation( 
+			getPoint(W.H).getX() + parameters.get(Prm.FFL),
+			getPoint(W.H).getY() + parameters.get(Prm.PH)/2.0 + parameters.get(Prm.TCH)/2.0);
+		
+		// Computing point on fender with same ordinate
+		Double b = -2.0 * getPoint(W.G).getX();
+		Double c = getPoint(W.G).getX() * getPoint(W.G).getX() + (getPoint(W.Tce).getY() - getPoint(W.G).getY()) * (getPoint(W.Tce).getY() - getPoint(W.G).getY()) - (parameters.get(Prm.WR)+parameters.get(Prm.FC)) * (parameters.get(Prm.WR)+parameters.get(Prm.FC));
+
+		getPoint(W.Tcw).setLocation( (-b - Math.sqrt(b*b - 4*c))/2, getPoint(W.Tce).getY());
+	
+	};
+
+	private void compute_rear_fork(){
+	
+
+		Double hBBOD = parameters.get(Prm.BBOD)/2;
+		Double hBBW = parameters.get(Prm.BBW)/2;
+		Double hRAW = parameters.get(Prm.RAW)/2;
+		Double hTW = parameters.get(Prm.TW)/2;
+		Double hCSODS = parameters.get(Prm.CSODS)/2;
+		Double hCSODE = parameters.get(Prm.CSODE)/2;
+		Double hCSODM ;
+
+		// Center of BB shell
+		getPoint(W.rA).setLocation( 0, 0);
+
+		// BB sheel corners
+		getPoint(W.rB).setLocation( hBBOD, hBBW);
+
+		getPoint(W.rC).setLocation( hBBOD, -hBBW);
+
+		getPoint(W.rD).setLocation( -hBBOD, -hBBW);
+
+		getPoint(W.rE).setLocation( -hBBOD, hBBW);
+
+		// Start end of the chainstay
+		getPoint(W.rF).setLocation( -hBBOD, parameters.get(Prm.BBCSO) - hBBW);
+
+		getPoint(W.rFl).setLocation( -hBBOD, getPoint(W.rF).getY() + parameters.get(Prm.CSODS)/2);
+
+		getPoint(W.rFr).setLocation( -hBBOD, getPoint(W.rF).getY() - parameters.get(Prm.CSODS)/2);
+
+		// Tapered end of the chainstay
+		getPoint(W.rG).setLocation( -parameters.get(Prm.CSL) + parameters.get(Prm.RDOL), -hRAW);
+		
+		getPoint(W.rGr).setLocation( -parameters.get(Prm.CSL) + parameters.get(Prm.RDOL), -hRAW-hCSODE);
+
+		getPoint(W.rGl).setLocation( -parameters.get(Prm.CSL) + parameters.get(Prm.RDOL), -hRAW+hCSODE);
+
+		// Rear axle middle point
+		getPoint(W.rH).setLocation( -parameters.get(Prm.CSL), 0);
+
+		// Point closest to the tire on straight chainstay
+		getPoint(W.rI).setLocation( 
+			parameters.get(Prm.WR) - (parameters.get(Prm.CSL)+hTW),
+			getPoint(W.rFl).getY() - (getPoint(W.rFl).getY()-getPoint(W.rGl).getY()) * (-getPoint(W.rI).getX() - hBBOD) / (parameters.get(Prm.CSL)-hBBOD)) ;
+		
+		/* For curved chainstay design:
+		 * curve (and subsequent placement of points Jl, J, Jr is 
+		 * dependent on the desired tire clearance and the chainstay taper
+		 */
+
+		// Starting with an approximation: tire clearance determines choice
+		// of Jl, the middle control point of a quadratic Bezier
+		getPoint(W.rJl).setLocation( 
+			parameters.get(Prm.WR)-(parameters.get(Prm.CSL)+hTW),
+			-(hTW + parameters.get(Prm.RTSC)));
+
+		// Approximating the chainstay diameter at tire
+		hCSODM = hCSODS  + getPoint(W.rJl).getX() * (hCSODS - hCSODE)/parameters.get(Prm.CSL);
+
+		// Iterating (by interval searching), until desired clearance
+		// is obtained on the curve
+		dist_rt_clearance_curved = 0.0;
+		Double l1, L1, h1;
+		Double angle_a1 = 0.0, angle_mu = 0.0;
+		int iter=1;
+
+		// initial interval limits: [ Jl, Jl+1cm ]
+		Double left = getPoint(W.rJl).getY();
+		Double right = left - 10;
+		Double PRECISION = 0.1;
+
+		while((left - right) > PRECISION){
+
+			getPoint(W.rJl).setLocation( getPoint(W.rJl).getX(), (left + right)/2.0);
+
+			System.out.printf("Iteration %d\n", iter);
+
+			// Constructing the Bezier control points for the inner curvature
+			// using Jl as middle control point
+
+			// Start point: B1
+			getPoint(W.B1).setLocation( 
+				(getPoint(W.rFl).getX() + getPoint(W.rJl).getX())/2.0,
+				(getPoint(W.rFl).getY() + getPoint(W.rJl).getY())/2.0);
+
+			l1 = getPoint(W.B1).getY() - getPoint(W.rJl).getY();
+			L1 = getPoint(W.B1).getX() - getPoint(W.rJl).getX();
+			h1 = Math.sqrt(l1*l1 + L1*L1);
+			angle_a1 = Math.atan(l1 / L1);
+			
+			// End point: B4
+			angle_mu = Math.atan( (getPoint(W.rJl).getY() - getPoint(W.rGl).getY()) / (getPoint(W.rJl).getX() - getPoint(W.rGl).getX()));	
+
+			getPoint(W.B4).setLocation( 
+				getPoint(W.rJl).getX() - h1 * Math.cos(angle_mu),
+				getPoint(W.rJl).getY() - h1 * Math.sin(angle_mu));
+
+			// Calculating B2 and B3 from B1, Jl, and B4
+			getPoint(W.B2).setLocation( 
+				getPoint(W.B1).getX() + (2.0/3) * (getPoint(W.rJl).getX() - getPoint(W.B1).getX()),
+				getPoint(W.B1).getY() + (2.0/3) * (getPoint(W.rJl).getY() - getPoint(W.B1).getY()));
+
+			getPoint(W.B3).setLocation( 
+				getPoint(W.B4).getX() + (2.0/3) * (getPoint(W.rJl).getX() - getPoint(W.B4).getX()),
+				getPoint(W.B4).getY() + (2.0/3) * (getPoint(W.rJl).getY() - getPoint(W.B4).getY()));
+
+			// Line B2B3 is tangent to the curve in (B2+B3)/2
+			dist_rt_clearance_curved = -hTW - (getPoint(W.B2).getY() + getPoint(W.B3).getY())/2.0;
+			System.out.printf("Actual clearance = %f\n", dist_rt_clearance_curved);
+
+			if (dist_rt_clearance_curved > parameters.get(Prm.RTSC)){
+				right = getPoint(W.rJl).getY();
+			} else {
+				left = getPoint(W.rJl).getY();
+			}
+			iter++;
+
+		}
+
+		// Calculating J and Jl, on bisector of angles[Fl]-Jl-Gl
+		Double angle_b1 = (((Math.PI/2.0) - angle_mu) - angle_a1) / 2.0 ;// bisector angle
+
+		getPoint(W.rJ).setLocation( 
+			getPoint(W.rJl).getX() + 2.0 * hCSODM * Math.sin(angle_b1),
+			getPoint(W.rJl).getY() - 2.0 * hCSODM * Math.cos(angle_b1));
+
+		getPoint(W.rJr).setLocation( 
+			getPoint(W.rJl).getX() + 2.0 * hCSODM * Math.sin(angle_b1),
+			getPoint(W.rJl).getY() - 2.0 * hCSODM * Math.cos(angle_b1));
+	 
+
+		// Constructing the Bezier control points for the outer curvature
+		// using Jr as middle control point
+
+		// Start point: C1
+		getPoint(W.C1).setLocation( 
+			(getPoint(W.rFr).getX() + getPoint(W.rJr).getX())/2.0,
+			(getPoint(W.rFr).getY() + getPoint(W.rJr).getY())/2.0);
+
+		l1 = getPoint(W.C1).getY() - getPoint(W.rJr).getY();
+		L1 = getPoint(W.C1).getX() - getPoint(W.rJr).getX();
+		h1 = Math.sqrt(l1*l1 + L1*L1);
+		angle_a1 = Math.atan(l1 / L1);
+		
+		// End point: C4
+		angle_mu = Math.atan( (getPoint(W.rJr).getY() - getPoint(W.rGr).getY()) / (getPoint(W.rJr).getX() - getPoint(W.rGr).getX()));	
+
+		getPoint(W.C4).setLocation( 
+			getPoint(W.rJr).getX() - h1 * Math.cos(angle_mu),
+			getPoint(W.rJr).getY() - h1 * Math.sin(angle_mu));
+
+		// Calculating C2 and C3 from C1, Jl, and C4
+		getPoint(W.C2).setLocation( 
+			getPoint(W.C1).getX() + (2.0/3) * (getPoint(W.rJr).getX() - getPoint(W.C1).getX()),
+			getPoint(W.C1).getY() + (2.0/3) * (getPoint(W.rJr).getY() - getPoint(W.C1).getY()));
+
+		getPoint(W.C3).setLocation( 
+			getPoint(W.C4).getX() + (2.0/3) * (getPoint(W.rJr).getX() - getPoint(W.C4).getX()),
+			getPoint(W.C4).getY() + (2.0/3) * (getPoint(W.rJr).getY() - getPoint(W.C4).getY()));
+
+		getPoint(W.rK).setLocation( 
+			parameters.get(Prm.WR) - (parameters.get(Prm.CSL)+hTW), 0);
+
+
+		// crank attachment
+		getPoint(W.rLr).setLocation( 0, -parameters.get(Prm.QF)/2);
+		getPoint(W.rLl).setLocation( 0, getPoint(W.rLr).getY() + parameters.get(Prm.CAW));
+
+		getPoint(W.rMr).setLocation(
+			-parameters.get(Prm.CL) - parameters.get(Prm.CER), // Total crank length = nominal crank length + crank eye radius
+			-parameters.get(Prm.QF)/2);
+		getPoint(W.rMl).setLocation( 
+			getPoint(W.rMr).getX(),
+			-parameters.get(Prm.QF)/2 + parameters.get(Prm.CAW));
+
+		System.out.printf("BB->crank: %f\n", parameters.get(Prm.QF)/2 - (parameters.get(Prm.CAW) + parameters.get(Prm.BBW)/2));
+	
+	}
+
+	private void compute_rear_fork_distances(){
+	
+		double xs = getPoint(W.rF).getX() - getPoint(W.rG).getX();
+		double ys = getPoint(W.rF).getY() - getPoint(W.rG).getY();
+		double xc1 = getPoint(W.rF).getX() - getPoint(W.rJ).getX();
+		double yc1 = getPoint(W.rF).getY() - getPoint(W.rJ).getY();
+		double xc2 = getPoint(W.rJ).getX() - getPoint(W.rG).getX();
+		double yc2 = getPoint(W.rJ).getY() - getPoint(W.rG).getY();
+		double xc3 = getPoint(W.rJr).getX() - getPoint(W.rGr).getX();
+		double yc3 = getPoint(W.rJr).getY() - getPoint(W.rGr).getY();
+		double xc4 = getPoint(W.rFr).getX() - getPoint(W.rGr).getX();
+		double yc4 = getPoint(W.rFr).getY() - getPoint(W.rGr).getY();
+		Point2D closest_to_crank = new Point2D.Double() ;
+		
+		// Angle for straight chainstay (center)
+		angle_epsilon = Math.atan((getPoint(W.rF).getX() - getPoint(W.rG).getX()) / (getPoint(W.rF).getY() - getPoint(W.rG).getY()) );
+		dist_csl_straight = Math.sqrt( xs*xs + ys*ys );
+
+		// Crank clearance for straight chainstay
+		closest_to_crank.setLocation( 
+			getPoint(W.rMl).getX(),
+			getPoint(W.rFr).getY() - (yc4/xc4) * (getPoint(W.rFr).getX() - getPoint(W.rMl).getX())); 
+
+		dist_straight_crank_clearance = closest_to_crank.getY() - getPoint(W.rMl).getY();
+
+		// Angle for curved chainstay (center)
+		angle_psi=Math.atan((getPoint(W.rF).getX() - getPoint(W.rJ).getX()) / (getPoint(W.rF).getY() - getPoint(W.rJ).getY()));
+		dist_csl_curved = Math.sqrt( xc1*xc1 + yc1*yc1) + Math.sqrt( xc2*xc2 + yc2*yc2 );
+
+		// Crank clearance for curved chainstay
+		closest_to_crank.setLocation(
+			closest_to_crank.getX(),
+			getPoint(W.rJr).getY() - (yc3/xc3) * (getPoint(W.rJr).getX() - closest_to_crank.getX()));
+		getPoint(W.rN).setLocation( closest_to_crank );
+		dist_curved_crank_clearance = closest_to_crank.getY() - getPoint(W.rMl).getY();
+		
+		dist_rt_clearance_straight = - (parameters.get(Prm.TW)/2) - getPoint(W.rI).getY();
+
+		System.out.printf("Straight chainstay: length = %f angle = %f, T-clearance = %f, C-clearance = %f\n", 
+						dist_csl_straight, degrees(angle_epsilon), dist_rt_clearance_straight, dist_straight_crank_clearance);
+		System.out.printf("Curved chainstay: length = %f angle = %f, T-clearance = %f, C-clearance = %f\n",
+						dist_csl_curved, degrees(angle_psi), dist_rt_clearance_curved, dist_curved_crank_clearance);
+		
+
+	
+	}
+
 	private void compute_body(){}
 
 
