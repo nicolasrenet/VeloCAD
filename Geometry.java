@@ -1594,11 +1594,6 @@ public class Geometry {
 	private void compute_body(){}
 
 
-	//private static native int getLabelId(String prm);
-
-
-
-
 
 	private Double cotan( Double a){
 		if (a == 0.0) return -1.0;

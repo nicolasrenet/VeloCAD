@@ -16,9 +16,9 @@ public class MouseHandler extends MouseAdapter {
 		System.out.printf("Click location: (%d, %d)\n", e.getX(), e.getY());
 		switch(e.getButton()){
 			case MouseEvent.BUTTON1:
-				int mod = e.getModifiers();
-				if ((mod & MouseEvent.CTRL_MASK) != 0 ){
-					if ((mod & MouseEvent.SHIFT_MASK) != 0){
+				int mod = e.getModifiersEx();
+				if ((mod & MouseEvent.CTRL_DOWN_MASK) != 0 ){
+					if ((mod & MouseEvent.SHIFT_DOWN_MASK) != 0){
 						sk.zoom(e.getX(), e.getY());
 					} else { 
 						sk.unzoom(e.getX(), e.getY());
