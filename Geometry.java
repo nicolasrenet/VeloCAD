@@ -14,24 +14,335 @@ import java.util.Map;
 
 public class Geometry {
 
-	static Map<Prm, Integer> prmToIndex;
-	static Map<W, Integer> pointToIndex;
+	/* For each point, its identifier, its label, and the view that contains it
+	 *	
+	 * Static by default
+	 */
+	public enum W { 
+				
+		A("A"),
+		B("B"),
+		C("C"),
+		D("D"),
+		E("E"),
+		F("F"),
+		G("G"),
+		Gp("Gp"),
+		H("H"),
+		Hw("Hw"),
+		Hf("Hf"),
+		Bs("Bs"),
+		J("J"),
+		K("K"),
+		KG("KG"),
+		Kp("Kp"),
+		L("L"),
+		M("M"),
+		N("N"),
+		R("R"),
+		Rb("Rb"),
+		rA("rA", View.REAR),
+		rB("rB", View.REAR),
+		rC("rC", View.REAR),
+		rD("rD", View.REAR),
+		rE("rE", View.REAR),
+		rF("rF", View.REAR),
+		rG("rG", View.REAR),
+		rGl("rGl", View.REAR),
+		rGr("rGr", View.REAR),
+		rH("rH", View.REAR),
+		rFl("rFl", View.REAR),
+		rFr("rFr", View.REAR),
+		rI("rI", View.REAR),
+		rJ("rJ", View.REAR),
+		rJl("rJl", View.REAR),
+		rJr("rJr", View.REAR),
+		rK("rK", View.REAR),
+		rBn("rBn", View.REAR),
+		rBs("rBs", View.REAR),
+		rLl("rLl", View.REAR),
+		rLr("rLr", View.REAR),
+		rMl("rMl", View.REAR),
+		rMr("rMr", View.REAR),
+		rN("rN", View.REAR),
+		Ai("Ai"),
+		Bi("Bi"),
+		Bsi("Bsi"),
+		Bsor("Bsor"),
+		Bsol("Bsol"),
+		Ci("Ci"),
+		Csi("Csi"),
+		Di("Di"),
+		Bol("Bol"),
+		Bsu("Bsu"),
+		Bor("Bor"),
+		Col("Col"),
+		Cor("Cor"),
+		ColPrime("ColPrime"),
+		CorPrime("CorPrime"),
+		Dol("Dol"),
+		Dor("Dor"),
+		Aol("Aol"),
+		Aom("Aom"),
+		Aor("Aor"),
+		Acu("Acu"),
+		Acl("Acl"),
+		Gl("Gl"),
+		Gm("Gm"),
+		Gr("Gr"),
+		Sb("Sb"),
+		Sf("Sf"),
+		Tb("Tb"),
+		Tf("Tf"),
+		Ub("Ub"),
+		Uf("Uf"),
+		Vb("Vb"),
+		Vf("Vf"),
+		Ha("Ha"),
+		Ma("Ma"),
+		Mal("Mal"),
+		Mar("Mar"),
+		Ba("Ba"),
+		Ecu("Ecu"),
+		Ecl("Ecl"),
+		Esu("Esu"),
+		Esl("Esl"),
+		Ecmu("Ecmu"),
+		Ecml("Ecml"),
+		Jal("Jal"),
+		Ja("Ja"),
+		Jar("Jar"),
+		Jla("Jla"),
+		Jua("Jua"),
+		Ji("Ji"),
+		Jo("Jo"),
+		Cmi("Cmi"),
+		Cmo("Cmo"),
+		Cal("Cal"),
+		Car("Car"),
+		Cat("Cat"),
+		Cab("Cab"),
+		Cel("Cel"),
+		Cem("Cem"),
+		Cell("Cell"),
+		Celr("Celr"),
+		Ceu("Ceu"),
+		Ceuu("Ceuu"),
+		Ceul("Ceul"),
+		Co("Co"),
+		Do("Do"),
+		Bo("Bo"),
+		Tce("Tce"),
+		Tcw("Tcw"),
+		Bspl("Bspl"),
+		Bspr("Bspr"),
+		Stmr("Stmr"),
+		Stmf("Stmf"),
+		Stur("Stur"),
+		Stuf("Stuf"),
+		Stlr("Stlr"),
+		Stlf("Stlf"),
+		Stbl("Stbl"),
+		Stbr("Stbr"),
 
-	static {
+		A1("A1"),
+		A2("A2"),
+		A3("A3"),
+		A4("A4"),
+		B1("B1", View.REAR),
+		B2("B2", View.REAR),
+		B3("B3", View.REAR),
+		B4("B4", View.REAR),
+		C1("C1", View.REAR),
+		C2("C2", View.REAR),
+		C3("C3", View.REAR),
+		C4("C4", View.REAR),
+		D1("D1"),
+		D2("D2"),
+		D3("D3"),
+		D4("D4"),
+		D5("D5"),
+		D6("D6"),
+		F1("F1"),
+		F2("F2"),
+		F3("F3"),
+		F4("F4"),
+		G0("G0"),
+		G1("G1"),
+		G2("G2"),
+		G3("G3"),
+		G4("G4"),
+		H1("H1"),
+		H2("H2"),
+		H3("H3"),
+		H4("H4"),
+		H5("H5"),
+		H6("H6"),
+		BodySeat("BodySeat"),
+		BodyShoulder("BodyShoulder"),
+		BodyElbow("BodyElbow");
+		
+		private final String label;
+		private View view;
 
-		// Assigning each enum constant its matching
-		// index in the C library parameters enum
-		// ... parameters
-		prmToIndex = new EnumMap<Prm, Integer>(Prm.class);
-		for ( Prm p: Prm.values()){
-			prmToIndex.put(p, p.ordinal());
+
+		W(String lab, View v){
+			label = lab;
+			view = v;
 		}
-		// ... points
-		pointToIndex = new EnumMap<W, Integer>(W.class);
-		for ( W w: W.values()){
-			pointToIndex.put(w, w.ordinal());
+
+		W(String lab){
+			this(lab, View.SIDE);
 		}
+
+		W(){
+			this("", View.SIDE);
+		}
+
+		public String getLabel(){ return label ; }
+		public View getView(){ return view ; }
+
+
 	}
+
+
+	/*
+	 * Pour chaque paramètre: ID, description, défaut, min, max
+	 *
+	 */
+	public enum Prm { 
+		ALPHA(Category.FT_TRIANGLE, "Seat tube angle", Math.toRadians(73D), Math.PI/4D, Math.PI/2D),
+		CSL(Category.RR_TRIANGLE, "Chainstay length", 440D, 50D, 1000D),
+		drop(Category.FT_TRIANGLE, "Drop", 70D, 0.0, 200D),
+		STL(Category.FT_TRIANGLE, "Seat tube length", 570D, 200D, 1500D),
+		TTL(Category.FT_TRIANGLE, "Top tube length", 580D, 200D, 1500D),
+		BETA(Category.FT_TRIANGLE, "Headtube angle", Math.toRadians(73D), Math.PI/4D, Math.PI/2D),
+		FR(Category.FORK, "Fork rake", 70D, 0D, 100D),
+		SIGMA(Category.FT_TRIANGLE, "Top tube slope", Math.toRadians(6D), 0.0, Math.PI/2D),
+		WR(Category.COMPONENTS, "Wheel radius", 334D, 160D, 400D), // 190 = roue de 12 pouces + pneus
+		TW(Category.COMPONENTS, "Tire Width", 42D, 20D, 60D),
+		CL(Category.COMPONENTS, "Crank length", 170D, 100D, 200D),
+		FC(Category.COMPONENTS, "Fender clearance", 10D, 1D, 30D),
+		FSH(Category.COMPONENTS, "Fender stack height", 5D, 0D, 30D),
+		FH(Category.COMPONENTS, "Fender height", 20D, 0D, 40D),
+		FBR(Category.FORK, "Fork bend radius", 6D*2.54*10, 4D*2.54*10, 20D*2.54*10),
+		BUD(Category.FORK, "Fork blade upper ø", 29D, 20D, 40D),
+		BLD(Category.FORK, "Fork blade lower ø", 20D, 10D, 40D),
+		FCH(Category.FORK, "Fork crown height", 16D, 5D, 60D),
+		BHS(Category.FT_TRIANGLE, "Bottom headset stack", 12D, 2D, 30D),
+		HTBO(Category.FT_TRIANGLE, "Headtube bottom offset", 3D, 2D, 30D),
+		DTOD(Category.FT_TRIANGLE, "Downtube ø", 28.6D, 25D, 35D),
+		HTOD(Category.FT_TRIANGLE, "Headtube ø", 31.8D, 25D, 35D),
+		BBOD(Category.FT_TRIANGLE, "Bottom bracket ø", 38.05D, 35D, 55D),
+		BBG(Category.FT_TRIANGLE, "Bottom bracket gauge", 2.1082D, 1D, 3D),
+		BBW(Category.FT_TRIANGLE, "Bottom bracket width", 68.5D, 65D, 75D),
+		BBCSO(Category.RR_TRIANGLE, "Bottom bracket chainstay offset", 15D, 5D, 37D),
+		CSODS(Category.RR_TRIANGLE, "Chainstay ø (start)", 22.2D, 20D, 30D),
+		CSODE(Category.RR_TRIANGLE, "Chainstay ø (end)", 12.7D, 10D, 30D),
+		RAW(Category.RR_TRIANGLE, "Rear axle width", 130D, 110D, 175D),
+		RTSC(Category.RR_TRIANGLE, "Rear tire side clearance", 10D, 0D, 30D),
+		RDOL(Category.RR_TRIANGLE, "Rear dropout offset (lower)", 20D, 5D, 50D),
+		RDOU(Category.RR_TRIANGLE, "Rear dropout offset (upper)", 35D, 5D, 50D),
+		FDO(Category.FORK, "Front dropout offset", 20D, 5D, 50D),
+		QF(Category.RR_TRIANGLE, "Crank tread", 140D, 80D, 200D),
+		CAW(Category.RR_TRIANGLE, "Crank arm width", 10D, 5D, 20D),
+		CER(Category.COMPONENTS, "Crank eye radius", 15D, 10D, 20D),
+		STOD(Category.FT_TRIANGLE, "Seat tube ø", 28.6D, 25D, 35D),
+		TTOD(Category.FT_TRIANGLE, "Top tube ø", 25.6D, 25D, 35D),
+		HTE(Category.FT_TRIANGLE, "Headtube upper extension", 10D, 0D, 50D),
+		PH(Category.COMPONENTS, "Pedal height", 15.0, 5D, 25D),
+		TCH(Category.COMPONENTS, "Toeclip height", 45D, 25D, 55D),
+		SSODS(Category.RR_TRIANGLE, "Seatstay ø (start)", 15D, 10D, 20D),
+		SSODE(Category.RR_TRIANGLE, "Seatstay ø (end)", 10D, 7D, 20D),
+		SSLL(Category.RR_TRIANGLE, "Seatstay leave length", 60D, 10D, 100D),
+		FFSA(Category.COMPONENTS, "Front fender start angle", Math.toRadians(-140D), -Math.PI, Math.toRadians(-130D)),
+		FFE(Category.COMPONENTS, "Front fender extension", Math.toRadians(150D), Math.PI/2D, Math.PI),
+		RFSA(Category.COMPONENTS, "Rear fender start angle", Math.toRadians(175D), Math.PI/2D, Math.PI),
+		RFE(Category.COMPONENTS, "Rear fender extension", Math.toRadians(190D), Math.PI/2D, Math.toRadians(200D)),
+		FFL(Category.ENGINE, "Forefoot length", 95D, 10D, 150D),
+		STMH(Category.COMPONENTS, "Stem height", 100D, 20D, 300D),
+		STML(Category.COMPONENTS, "Stem length", 100D, 10D, 150D),
+		STQD(Category.COMPONENTS, "Stem quill diameter", 22.2D, 20D, 30D ),
+		STHD(Category.COMPONENTS, "Stem hanger diameter", 25D, 20.0D, 40D ),
+		STCD(Category.COMPONENTS, "Stem clamp diameter", 25.4D, 22D, 30D),
+		SDH(Category.ENGINE, "Saddle height", 750D, 300D, 1200D),
+		RFL(Category.ENGINE, "Rearfoot length", 95D, 50D, 250D),
+		FMRL(Category.ENGINE, "Femur length", 950D, 200D, 1000D),
+		TBL(Category.ENGINE, "Tibia length", 950D, 200D, 1000D),
+		SHLDRH(Category.ENGINE, "Shoulder height (from floor)", 1450D, 740D, 2000D),
+		FAL(Category.ENGINE, "Forearm length", 300D, 140D, 500D),
+		UAL(Category.ENGINE, "Upper arm length", 300D, 140D, 500D),
+		PBH(Category.ENGINE, "Pubic Bone height (from floor)", 830D, 300D, 1000D),
+		AFL(Category.ENGINE, "Arm flexion", Math.toRadians(5D), 0D, Math.PI/2D);
+
+				
+		
+				
+		private final Category category;
+		private final String label;
+		private final Double defaultValue ;
+		private final Double minimumValue;
+		private final Double maximumValue;
+
+		Prm( Category cat, String lab, Double dflt, Double min, Double max){
+			category = cat;
+			label = lab;
+			defaultValue = dflt;
+			minimumValue = min;
+			maximumValue = max;
+		}
+
+		Prm( Category cat){
+			this(cat, "", 0.0, 0.0, 10000.0);
+		}
+
+		Prm(){
+			this(Category.FT_TRIANGLE, "", 0.0, 0.0, 10000.0);
+		}
+
+		public String getLabel(){ return label ; }
+		public Category getCategory(){ return category ; }
+		public Double getDefault(){ return defaultValue ;}
+		public Double getMinValue(){ return minimumValue ;}
+		public Double getMaxValue(){ return maximumValue ;}
+
+	}
+
+	/*
+	 * Parameters: the actual values
+	 *
+	 */
+	public class ParameterSet extends EnumMap<Prm, Double> {
+
+		private Double[] doubleValues; 
+
+		public ParameterSet(){
+			super( Prm.class);
+			doubleValues = new Double[ Prm.values().length ];
+			for (Prm p: Prm.values()){
+				put(p, p.getDefault());
+			}
+		};
+	}
+
+	/*
+	 * Points: the actual values
+	 *
+	 */
+	public class PointSet extends EnumMap<W, Point2D> {
+
+		private Point2D[] pointValues; 
+
+		public PointSet(){
+			super( W.class);
+			pointValues = new Point2D[ W.values().length ];
+			for (W w: W.values()){
+				put(w, new Point2D.Double(0, 0));
+			
+			}
+		};
+	}
+
 
 	private boolean hasValidData = false;
 
@@ -110,15 +421,11 @@ public class Geometry {
 
 	public int refresh(){
 
-		Point2D[] world = points.asArray();
-
 		if (validParameters()){
 			this.hasValidData = true ;
 	
-			// Performs the computations through C-library libsketch.so
-			update( parameters.asArray(), world);
-			// Copies the points from the array
-			points.updateFromArray( world );
+			// Performs the computations 
+			update();
 		} else {
 			System.out.println("Invalid parameters! Skipping computations.");
 			this.hasValidData = false ;
@@ -299,7 +606,7 @@ public class Geometry {
 	private Double angle_BEx ;
 	private Double angle_CEx ;
 
-	private int update(Double parameters[], Point2D w[]){
+	private void update(){
 		
 		compute_trigo();
 		compute_schematics();
@@ -309,7 +616,6 @@ public class Geometry {
 		compute_rear_fork_distances();
 		compute_body();
 
-		return 0;
 	}
 
 
@@ -1014,7 +1320,7 @@ public class Geometry {
 
 		};
 
-	private void contour_crank(){};
+	private void contour_crank(){ };
 
 	private void compute_rear_fork(){}
 	private void compute_rear_fork_distances(){}
@@ -1026,344 +1332,6 @@ public class Geometry {
 
 
 
-	// Static by default
-	public enum W { 
-				
-		A("A"),
-		B("B"),
-		C("C"),
-		D("D"),
-		E("E"),
-		F("F"),
-		G("G"),
-		Gp("Gp"),
-		H("H"),
-		Hw("Hw"),
-		Hf("Hf"),
-		Bs("Bs"),
-		J("J"),
-		K("K"),
-		KG("KG"),
-		Kp("Kp"),
-		L("L"),
-		M("M"),
-		N("N"),
-		R("R"),
-		Rb("Rb"),
-		rA("rA", View.REAR),
-		rB("rB", View.REAR),
-		rC("rC", View.REAR),
-		rD("rD", View.REAR),
-		rE("rE", View.REAR),
-		rF("rF", View.REAR),
-		rG("rG", View.REAR),
-		rGl("rGl", View.REAR),
-		rGr("rGr", View.REAR),
-		rH("rH", View.REAR),
-		rFl("rFl", View.REAR),
-		rFr("rFr", View.REAR),
-		rI("rI", View.REAR),
-		rJ("rJ", View.REAR),
-		rJl("rJl", View.REAR),
-		rJr("rJr", View.REAR),
-		rK("rK", View.REAR),
-		rBn("rBn", View.REAR),
-		rBs("rBs", View.REAR),
-		rLl("rLl", View.REAR),
-		rLr("rLr", View.REAR),
-		rMl("rMl", View.REAR),
-		rMr("rMr", View.REAR),
-		rN("rN", View.REAR),
-		Ai("Ai"),
-		Bi("Bi"),
-		Bsi("Bsi"),
-		Bsor("Bsor"),
-		Bsol("Bsol"),
-		Ci("Ci"),
-		Csi("Csi"),
-		Di("Di"),
-		Bol("Bol"),
-		Bsu("Bsu"),
-		Bor("Bor"),
-		Col("Col"),
-		Cor("Cor"),
-		ColPrime("ColPrime"),
-		CorPrime("CorPrime"),
-		Dol("Dol"),
-		Dor("Dor"),
-		Aol("Aol"),
-		Aom("Aom"),
-		Aor("Aor"),
-		Acu("Acu"),
-		Acl("Acl"),
-		Gl("Gl"),
-		Gm("Gm"),
-		Gr("Gr"),
-		Sb("Sb"),
-		Sf("Sf"),
-		Tb("Tb"),
-		Tf("Tf"),
-		Ub("Ub"),
-		Uf("Uf"),
-		Vb("Vb"),
-		Vf("Vf"),
-		Ha("Ha"),
-		Ma("Ma"),
-		Mal("Mal"),
-		Mar("Mar"),
-		Ba("Ba"),
-		Ecu("Ecu"),
-		Ecl("Ecl"),
-		Esu("Esu"),
-		Esl("Esl"),
-		Ecmu("Ecmu"),
-		Ecml("Ecml"),
-		Jal("Jal"),
-		Ja("Ja"),
-		Jar("Jar"),
-		Jla("Jla"),
-		Jua("Jua"),
-		Ji("Ji"),
-		Jo("Jo"),
-		Cmi("Cmi"),
-		Cmo("Cmo"),
-		Cal("Cal"),
-		Car("Car"),
-		Cat("Cat"),
-		Cab("Cab"),
-		Cel("Cel"),
-		Cem("Cem"),
-		Cell("Cell"),
-		Celr("Celr"),
-		Ceu("Ceu"),
-		Ceuu("Ceuu"),
-		Ceul("Ceul"),
-		Co("Co"),
-		Do("Do"),
-		Bo("Bo"),
-		Tce("Tce"),
-		Tcw("Tcw"),
-		Bspl("Bspl"),
-		Bspr("Bspr"),
-		Stmr("Stmr"),
-		Stmf("Stmf"),
-		Stur("Stur"),
-		Stuf("Stuf"),
-		Stlr("Stlr"),
-		Stlf("Stlf"),
-		Stbl("Stbl"),
-		Stbr("Stbr"),
-
-		A1("A1"),
-		A2("A2"),
-		A3("A3"),
-		A4("A4"),
-		B1("B1", View.REAR),
-		B2("B2", View.REAR),
-		B3("B3", View.REAR),
-		B4("B4", View.REAR),
-		C1("C1", View.REAR),
-		C2("C2", View.REAR),
-		C3("C3", View.REAR),
-		C4("C4", View.REAR),
-		D1("D1"),
-		D2("D2"),
-		D3("D3"),
-		D4("D4"),
-		D5("D5"),
-		D6("D6"),
-		F1("F1"),
-		F2("F2"),
-		F3("F3"),
-		F4("F4"),
-		G0("G0"),
-		G1("G1"),
-		G2("G2"),
-		G3("G3"),
-		G4("G4"),
-		H1("H1"),
-		H2("H2"),
-		H3("H3"),
-		H4("H4"),
-		H5("H5"),
-		H6("H6"),
-		BodySeat("BodySeat"),
-		BodyShoulder("BodyShoulder"),
-		BodyElbow("BodyElbow");
-		
-		private final String label;
-		private View view;
-
-
-		W(String lab, View v){
-			label = lab;
-			view = v;
-		}
-
-		W(String lab){
-			this(lab, View.SIDE);
-		}
-
-		W(){
-			this("", View.SIDE);
-		}
-
-		public String getLabel(){ return label ; }
-		public View getView(){ return view ; }
-
-
-	}
-
-
-	/*
-	 * Pour chaque paramètre: ID, description, défaut, min, max
-	 *
-	 */
-	public enum Prm { 
-		ALPHA(Category.FT_TRIANGLE, "Seat tube angle", Math.toRadians(73D), Math.PI/4D, Math.PI/2D),
-		CSL(Category.RR_TRIANGLE, "Chainstay length", 440D, 50D, 1000D),
-		drop(Category.FT_TRIANGLE, "Drop", 70D, 0.0, 200D),
-		STL(Category.FT_TRIANGLE, "Seat tube length", 570D, 200D, 1500D),
-		TTL(Category.FT_TRIANGLE, "Top tube length", 580D, 200D, 1500D),
-		BETA(Category.FT_TRIANGLE, "Headtube angle", Math.toRadians(73D), Math.PI/4D, Math.PI/2D),
-		FR(Category.FORK, "Fork rake", 70D, 0D, 100D),
-		SIGMA(Category.FT_TRIANGLE, "Top tube slope", Math.toRadians(6D), 0.0, Math.PI/2D),
-		WR(Category.COMPONENTS, "Wheel radius", 334D, 160D, 400D), // 190 = roue de 12 pouces + pneus
-		TW(Category.COMPONENTS, "Tire Width", 42D, 20D, 60D),
-		CL(Category.COMPONENTS, "Crank length", 170D, 100D, 200D),
-		FC(Category.COMPONENTS, "Fender clearance", 10D, 1D, 30D),
-		FSH(Category.COMPONENTS, "Fender stack height", 5D, 0D, 30D),
-		FH(Category.COMPONENTS, "Fender height", 20D, 0D, 40D),
-		FBR(Category.FORK, "Fork bend radius", 6D*2.54*10, 4D*2.54*10, 20D*2.54*10),
-		BUD(Category.FORK, "Fork blade upper ø", 29D, 20D, 40D),
-		BLD(Category.FORK, "Fork blade lower ø", 20D, 10D, 40D),
-		FCH(Category.FORK, "Fork crown height", 16D, 5D, 60D),
-		BHS(Category.FT_TRIANGLE, "Bottom headset stack", 12D, 2D, 30D),
-		HTBO(Category.FT_TRIANGLE, "Headtube bottom offset", 3D, 2D, 30D),
-		DTOD(Category.FT_TRIANGLE, "Downtube ø", 28.6D, 25D, 35D),
-		HTOD(Category.FT_TRIANGLE, "Headtube ø", 31.8D, 25D, 35D),
-		BBOD(Category.FT_TRIANGLE, "Bottom bracket ø", 38.05D, 35D, 55D),
-		BBG(Category.FT_TRIANGLE, "Bottom bracket gauge", 2.1082D, 1D, 3D),
-		BBW(Category.FT_TRIANGLE, "Bottom bracket width", 68.5D, 65D, 75D),
-		BBCSO(Category.RR_TRIANGLE, "Bottom bracket chainstay offset", 15D, 5D, 37D),
-		CSODS(Category.RR_TRIANGLE, "Chainstay ø (start)", 22.2D, 20D, 30D),
-		CSODE(Category.RR_TRIANGLE, "Chainstay ø (end)", 12.7D, 10D, 30D),
-		RAW(Category.RR_TRIANGLE, "Rear axle width", 130D, 110D, 175D),
-		RTSC(Category.RR_TRIANGLE, "Rear tire side clearance", 10D, 0D, 30D),
-		RDOL(Category.RR_TRIANGLE, "Rear dropout offset (lower)", 20D, 5D, 50D),
-		RDOU(Category.RR_TRIANGLE, "Rear dropout offset (upper)", 35D, 5D, 50D),
-		FDO(Category.FORK, "Front dropout offset", 20D, 5D, 50D),
-		QF(Category.RR_TRIANGLE, "Crank tread", 140D, 80D, 200D),
-		CAW(Category.RR_TRIANGLE, "Crank arm width", 10D, 5D, 20D),
-		CER(Category.COMPONENTS, "Crank eye radius", 15D, 10D, 20D),
-		STOD(Category.FT_TRIANGLE, "Seat tube ø", 28.6D, 25D, 35D),
-		TTOD(Category.FT_TRIANGLE, "Top tube ø", 25.6D, 25D, 35D),
-		HTE(Category.FT_TRIANGLE, "Headtube upper extension", 10D, 0D, 50D),
-		PH(Category.COMPONENTS, "Pedal height", 15.0, 5D, 25D),
-		TCH(Category.COMPONENTS, "Toeclip height", 45D, 25D, 55D),
-		SSODS(Category.RR_TRIANGLE, "Seatstay ø (start)", 15D, 10D, 20D),
-		SSODE(Category.RR_TRIANGLE, "Seatstay ø (end)", 10D, 7D, 20D),
-		SSLL(Category.RR_TRIANGLE, "Seatstay leave length", 60D, 10D, 100D),
-		FFSA(Category.COMPONENTS, "Front fender start angle", Math.toRadians(-140D), -Math.PI, Math.toRadians(-130D)),
-		FFE(Category.COMPONENTS, "Front fender extension", Math.toRadians(150D), Math.PI/2D, Math.PI),
-		RFSA(Category.COMPONENTS, "Rear fender start angle", Math.toRadians(175D), Math.PI/2D, Math.PI),
-		RFE(Category.COMPONENTS, "Rear fender extension", Math.toRadians(190D), Math.PI/2D, Math.toRadians(200D)),
-		FFL(Category.ENGINE, "Forefoot length", 95D, 10D, 150D),
-		STMH(Category.COMPONENTS, "Stem height", 100D, 20D, 300D),
-		STML(Category.COMPONENTS, "Stem length", 100D, 10D, 150D),
-		STQD(Category.COMPONENTS, "Stem quill diameter", 22.2D, 20D, 30D ),
-		STHD(Category.COMPONENTS, "Stem hanger diameter", 25D, 20.0D, 40D ),
-		STCD(Category.COMPONENTS, "Stem clamp diameter", 25.4D, 22D, 30D),
-		SDH(Category.ENGINE, "Saddle height", 750D, 300D, 1200D),
-		RFL(Category.ENGINE, "Rearfoot length", 95D, 50D, 250D),
-		FMRL(Category.ENGINE, "Femur length", 950D, 200D, 1000D),
-		TBL(Category.ENGINE, "Tibia length", 950D, 200D, 1000D),
-		SHLDRH(Category.ENGINE, "Shoulder height (from floor)", 1450D, 740D, 2000D),
-		FAL(Category.ENGINE, "Forearm length", 300D, 140D, 500D),
-		UAL(Category.ENGINE, "Upper arm length", 300D, 140D, 500D),
-		PBH(Category.ENGINE, "Pubic Bone height (from floor)", 830D, 300D, 1000D),
-		AFL(Category.ENGINE, "Arm flexion", Math.toRadians(5D), 0D, Math.PI/2D);
-
-				
-		
-				
-		private final Category category;
-		private final String label;
-		private final Double defaultValue ;
-		private final Double minimumValue;
-		private final Double maximumValue;
-
-		Prm( Category cat, String lab, Double dflt, Double min, Double max){
-			category = cat;
-			label = lab;
-			defaultValue = dflt;
-			minimumValue = min;
-			maximumValue = max;
-		}
-
-		Prm( Category cat){
-			this(cat, "", 0.0, 0.0, 10000.0);
-		}
-
-		Prm(){
-			this(Category.FT_TRIANGLE, "", 0.0, 0.0, 10000.0);
-		}
-
-		public String getLabel(){ return label ; }
-		public Category getCategory(){ return category ; }
-		public Double getDefault(){ return defaultValue ;}
-		public Double getMinValue(){ return minimumValue ;}
-		public Double getMaxValue(){ return maximumValue ;}
-
-	}
-
-	public class ParameterSet extends EnumMap<Prm, Double> {
-
-		private Double[] doubleValues; 
-
-		public ParameterSet(){
-			super( Prm.class);
-			doubleValues = new Double[ Prm.values().length ];
-			for (Prm p: Prm.values()){
-				put(p, p.getDefault());
-			}
-		};
-		
-		public Double[] asArray(){
-			for (Prm p: Prm.values()){
-				doubleValues[ prmToIndex.get( p ) ] = get( p );
-			}
-			// Should return a CLONE of the array
-			return doubleValues.clone();
-		}
-	}
-
-	public class PointSet extends EnumMap<W, Point2D> {
-
-		private Point2D[] pointValues; 
-
-		public PointSet(){
-			super( W.class);
-			pointValues = new Point2D[ W.values().length ];
-			for (W w: W.values()){
-				put(w, new Point2D.Double(0, 0));
-			
-			}
-		};
-		
-		public Point2D[] asArray(){
-			for (W w: W.values()){
-				pointValues[ pointToIndex.get( w ) ] = get( w );
-			}
-			return pointValues;
-		}
-
-		private void updateFromArray( Point2D[] array){
-			for (W w: keySet()){
-				put( w, array[ pointToIndex.get( w ) ]);
-			}
-		}
-	}
 
 	private Double cotan( Double a){
 		if (a == 0.0) return -1.0;
