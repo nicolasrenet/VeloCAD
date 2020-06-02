@@ -26,11 +26,14 @@ public class Geometry {
 		D("D"),
 		E("E"),
 		F("F"),
+		Fl("Fl"),
 		G("G"),
 		Gp("Gp"),
+		Gps("Gps"),
 		H("H"),
 		Hw("Hw"),
 		Hf("Hf"),
+		Hfs("Hfs"),
 		Bs("Bs"),
 		J("J"),
 		K("K"),
@@ -139,11 +142,13 @@ public class Geometry {
 		Stmr("Stmr"),
 		Stmf("Stmf"),
 		Stur("Stur"),
-		Stuf("Stuf"),
+		-Stuf("Stuf"),
 		Stlr("Stlr"),
 		Stlf("Stlf"),
 		Stbl("Stbl"),
 		Stbr("Stbr"),
+		Stbm("Stbm"),
+		Stbh("Stbh"),
 
 		A1("A1"),
 		A2("A2"),
@@ -178,13 +183,16 @@ public class Geometry {
 		H4("H4"),
 		H5("H5"),
 		H6("H6"),
+
+		HJamesX("HJamesX"),
+		HJamesY("HJamesY"),
+
 		BodySeat("BodySeat"),
 		BodyShoulder("BodyShoulder"),
 		BodyElbow("BodyElbow");
 		
 		private final String label;
 		private View view;
-
 
 		W(String lab, View v){
 			label = lab;
@@ -201,9 +209,9 @@ public class Geometry {
 
 		public String getLabel(){ return label ; }
 		public View getView(){ return view ; }
-
-
 	}
+
+
 
 
 	/*
@@ -229,13 +237,15 @@ public class Geometry {
 		BUD(Category.FORK, "Fork blade upper ø", 29D, 20D, 40D),
 		BLD(Category.FORK, "Fork blade lower ø", 20D, 10D, 40D),
 		FCH(Category.FORK, "Fork crown height", 16D, 5D, 60D),
-		BHS(Category.FT_TRIANGLE, "Bottom headset stack", 12D, 2D, 30D),
+		BHS(Category.COMPONENTS, "Bottom headset stack", 12D, 2D, 30D),
+		THS(Category.COMPONENTS, "Top headset stack", 30D, 2D, 40D),
 		HTBO(Category.FT_TRIANGLE, "Headtube bottom offset", 3D, 2D, 30D),
 		DTOD(Category.FT_TRIANGLE, "Downtube ø", 28.6D, 25D, 35D),
 		HTOD(Category.FT_TRIANGLE, "Headtube ø", 31.8D, 25D, 35D),
 		BBOD(Category.FT_TRIANGLE, "Bottom bracket ø", 38.05D, 35D, 55D),
 		BBG(Category.FT_TRIANGLE, "Bottom bracket gauge", 2.1082D, 1D, 3D),
 		BBW(Category.FT_TRIANGLE, "Bottom bracket width", 68.5D, 65D, 75D),
+		BBL(Category.COMPONENTS, "Bottom bracket length", 110D, 107D, 122D),
 		BBCSO(Category.RR_TRIANGLE, "Bottom bracket chainstay offset", 15D, 5D, 37D),
 		CSODS(Category.RR_TRIANGLE, "Chainstay ø (start)", 22.2D, 20D, 30D),
 		CSODE(Category.RR_TRIANGLE, "Chainstay ø (end)", 12.7D, 10D, 30D),
@@ -308,7 +318,61 @@ public class Geometry {
 
 	}
 
-	/*
+
+
+	/**
+	 * Computed data: some are target values to be monitored closely (BB height, trail), some 
+	 * should typically exceed or stay within a certain threshold (clearances), such as standover,
+	 * and some are just useful information for choosing the tubes, or setting up the jig.
+	 *
+	 * A case might be made for including the trail as a parameter, instead of the fork rake.
+	 */
+	public enum INDICATOR {
+
+
+		BB_HEIGHT("BB height", "Bottom bracket height (above ground)", true),
+		PEDAL_CLEARANCE("Pedal clearance", "Pedal height (above ground)", true),
+		HJX("Henry James X", "Henry James X datum (BB to steerer axis", true),
+		HJY("Henry James Y", "Henry James Y datum (from HJX to bottom of head tube", true),
+		TOE_OVERLAP("Toe overlap", "A (crude) measure of toe overlap", true),
+		WHEELBASE("Wheelbase", "Distance between axles", true),
+		STANDOVER("Standover", "Height of the (virtual) horizontal tube", true),
+		STEERER_LENGTH("Steerer length", "Minimal length of the steerer tube", true),
+		TRAIL("Trail", "Trail", true),
+		CROSS_MEMBER_LENGTH("Cross-member length", "Cross-member length (for mixte frames)"),
+		BB_TO_FRONT("BB to front axle", "BB to front axle distance (along x-axis)"),
+		SADDLE_HEIGHT("Saddle height", "Saddle height"),
+		CHAINSTAY_ANGLE_CURVED("Chainstay angle (curved CS)", "Chainstay angle with frame axis (curved CS)", true),
+		CHAINSTAY_ANGLE_STRAIGHT("Chainstay angle (straight CS)", "Chainstay angle with frame axis (straight CS)", true),
+		CRANK_CLEARANCE_CURVED("Crank/CS clearance (curved CS)", "Crank/CS clearance (curved CS)", true),
+		CRANK_CLEARANCE_STRAIGHT("Crank/CS clearance (straight CS)", "Crank/CS clearance (straight CS)", true);
+
+
+		private String longDesc;
+		private String shortDesc;
+		private Boolean isKeyDatum=false; // indicator is a key datum
+
+
+		INDICATOR( String shortDesc, String longDesc){
+			this.shortDesc = shortDesc;
+			this.longDesc = longDesc;
+		}
+
+		INDICATOR( String shortDesc, String longDesc, Boolean isKey ){
+			this.shortDesc = shortDesc;
+			this.longDesc = longDesc;
+			this.isKeyDatum = isKey;
+		}
+
+		public String getShortDesc(){ return shortDesc; }
+		public String getLongDesc(){ return longDesc; }
+		public Boolean getIsKeyDatum(){ return isKeyDatum; }
+	}
+
+
+	private Double dist_L;
+
+	/**
 	 * Parameters: the actual values
 	 *
 	 */
@@ -344,6 +408,27 @@ public class Geometry {
 	}
 
 
+	/*
+	 * Indicator: the actual values
+	 *
+	 */
+	public class IndicatorSet extends EnumMap<INDICATOR, Double> {
+
+		private Double[] indicatorValues; 
+
+		public IndicatorSet(){
+			super( INDICATOR.class);
+			indicatorValues = new Double[ INDICATOR.values().length ];
+			for (INDICATOR i: INDICATOR.values()){
+				put(i, 0.0);
+			
+			}
+		};
+	}
+
+
+
+
 	private boolean hasValidData = false;
 
 	public static enum Category { FT_TRIANGLE, RR_TRIANGLE, FORK, COMPONENTS, ENGINE };
@@ -356,6 +441,8 @@ public class Geometry {
 
 	private ParameterSet parameters;
 	private PointSet points;
+	private IndicatorSet indicators;
+
 	private File configFile; // Config file currently associated with this data set
 	private String creationTime;
 	private FrameType frameType = FrameType.CLASSIC;
@@ -371,10 +458,11 @@ public class Geometry {
 	 */
 	public Geometry(){
 		
-		System.out.println("Geometry() constructor call");
+		// System.out.println("Geometry() constructor call");
 
 		parameters = new ParameterSet();
 		points = new PointSet();
+		indicators = new IndicatorSet();
 
 
 		///observers = new ArrayList<ViewPane>();
@@ -427,7 +515,7 @@ public class Geometry {
 			// Performs the computations 
 			update();
 		} else {
-			System.out.println("Invalid parameters! Skipping computations.");
+			// System.out.println("Invalid parameters! Skipping computations.");
 			this.hasValidData = false ;
 			return -1;
 		}
@@ -446,7 +534,7 @@ public class Geometry {
 		// Check for out-of-bounds values
 		for (Prm p: Prm.values()){
 			if  ( getRawParameter( p ) < p.getMinValue() || getRawParameter( p ) > p.getMaxValue()){
-				System.out.println("Parameter " + p + " should be comprised between " + p.getMinValue() + " and " + p.getMaxValue());
+				// System.out.println("Parameter " + p + " should be comprised between " + p.getMinValue() + " and " + p.getMaxValue());
 				return false ;
 			}
 		}
@@ -455,17 +543,17 @@ public class Geometry {
 		
 		// drop + pedal length exceeds wheel radius
 		if ((getRawParameter( Prm.drop ) + getRawParameter( Prm.CL )) >= getRawParameter( Prm.WR )){
-			System.out.println("Inconsistent data: drop + crank length > wheel radius!");
+			// System.out.println("Inconsistent data: drop + crank length > wheel radius!");
 			return false;
 		}
 		// Chainstay length exceeds wheel radius
 		if ( getRawParameter( Prm.WR ) >= getRawParameter( Prm.CSL )){
-			System.out.println("Inconsistent data: wheel radius > chainstay length!");
+			// System.out.println("Inconsistent data: wheel radius > chainstay length!");
 			return false;
 		}
 		// Top tube length is less that projection of A-Ap, w/ Ap projection of A on TT
 		if ( getRawParameter( Prm.STL ) * Math.cos( getRawParameter( Prm.ALPHA ))  > getRawParameter( Prm.TTL )){
-			System.out.println("Inconsistent data: top tube length does not fit the seat tube specs!");
+			// System.out.println("Inconsistent data: top tube length does not fit the seat tube specs!");
 			return false;
 		}
 		
@@ -547,6 +635,11 @@ public class Geometry {
 	}
 
 
+	public Double getIndicator(INDICATOR id){
+		return indicators.get( id  );
+	}
+
+
 
 	private Double cos_ALPHA = 0.0; 
 	private Double sin_ALPHA = 0.0; 
@@ -568,35 +661,6 @@ public class Geometry {
 	private Double tan_SIGMAc = 0.0; 
 
 
-	private Double dist_G;
-	private Double dist_L;
-	private Double dist_Lprime;
-	private Double dist_Gdelta;
-	private Double dist_Hdelta;
-	private Double dist_H;
-	private Double dist_X;
-	private Double dist_Sdelta;
-        private Double dist_dtl ;
-        private Double dist_ssl ;
-        private Double dist_ttl_actual ;
-        private Double dist_ssl_actual ;
-        private Double dist_standover ;
-        private Double dist_pedal_clearance ;
-        private Double dist_trail ;
-        private Double dist_cross_member_length;
-	private Double dist_fork_length;
-        private Double dist_wheelbase ;
-        private Double dist_bb2front ;
-        private Double dist_overlap ;
-	private Double dist_rt_clearance_straight;
-	private Double dist_rt_clearance_curved;
-	private Double dist_csl_straight;
-	private Double dist_csl_curved;
-	private Double dist_cs_curve_position;
-	private Double dist_straight_crank_clearance;
-	private Double dist_curved_crank_clearance;
-	private Double dist_leave_radius;
-	private Double dist_saddle_height;
 
 	private Double angle_EAB ;
 	private Double angle_CBD ;
@@ -615,6 +679,8 @@ public class Geometry {
 		compute_rear_fork();
 		compute_rear_fork_distances();
 		compute_body();
+
+		compute_henry_james_points();
 
 	}
 
@@ -653,15 +719,17 @@ public class Geometry {
 		Double hDTOD = parameters.get(Prm.DTOD)/2;
 		Double FBA ;
 
-		dist_fork_length = parameters.get(Prm.WR) + parameters.get(Prm.FC) + parameters.get(Prm.FSH);
+		Double dist_fork_length = parameters.get(Prm.WR) + parameters.get(Prm.FC) + parameters.get(Prm.FSH);
 
-		dist_G = Math.sqrt(dist_fork_length * dist_fork_length - parameters.get(Prm.FR) * parameters.get(Prm.FR));
 		//dist_L = parameters.get(Prm.STL) * cos(Math.PI / 2 - parameters.get(Prm.ALPHA)) - parameters[drop];
-		dist_L = parameters.get(Prm.STL) * cos_ALPHAc - parameters.get(Prm.drop);
-		dist_Lprime = dist_L / cos_BETAc;
-		dist_Gdelta = parameters.get(Prm.FR) * tan_BETAc;
+
+		// distance top tube to wheels axis
+		Double dist_L = parameters.get(Prm.STL) * cos_ALPHAc - parameters.get(Prm.drop);
+
+		Double dist_Lprime = dist_L / cos_BETAc;
+		Double dist_Gdelta = parameters.get(Prm.FR) * tan_BETAc;
 		angle_EAB = parameters.get(Prm.ALPHA) - Math.asin(parameters.get(Prm.drop) / parameters.get(Prm.CSL));
-		dist_Sdelta = ( parameters.get(Prm.SIGMA)==0.0 ? 0.0 : (parameters.get(Prm.TTL) / sin_ALPHA) / (1/tan_ALPHA + (1/tan_SIGMA)));
+		Double dist_Sdelta = ( parameters.get(Prm.SIGMA)==0.0 ? 0.0 : (parameters.get(Prm.TTL) / sin_ALPHA) / (1/tan_ALPHA + (1/tan_SIGMA)));
 		// angle fork line / steerer
 		chi = Math.asin(parameters.get(Prm.FR) / dist_fork_length);
 		// Angle fork line / vertical
@@ -682,8 +750,10 @@ public class Geometry {
 		getPoint(W.G).setLocation(	getPoint(W.C).getX() + Math.sqrt( dist_Lprime * dist_Lprime - dist_L * dist_L) + Math.sqrt(dist_Gdelta * dist_Gdelta + parameters.get(Prm.FR) * parameters.get(Prm.FR)),
 						parameters.get(Prm.drop));
 
-		getPoint(W.F).setLocation(	getPoint(W.G).getX() - Math.sin(rho) * dist_fork_length,
-						getPoint(W.G).getY() + Math.cos(rho) * dist_fork_length);
+		getPoint(W.F).setLocation(	getPoint(W.G).getX() - Math.sin(rho) * (dist_fork_length),
+						getPoint(W.G).getY() + Math.cos(rho) * (dist_fork_length));
+		getPoint(W.Fl).setLocation(	getPoint(W.F).getX() + Math.cos(parameters.get(Prm.BETA)) * 20,
+						getPoint(W.F).getY() - Math.sin(parameters.get(Prm.BETA)) * 20);
 
 		getPoint(W.E).setLocation(	Math.sqrt(parameters.get(Prm.CSL) * parameters.get(Prm.CSL) - parameters.get(Prm.drop) * parameters.get(Prm.drop)) * -1,
 						parameters.get(Prm.drop));
@@ -698,17 +768,16 @@ public class Geometry {
 		angle_DAx = Math.atan( getPoint(W.Rb).getY() / getPoint(W.Rb).getX()) + Math.asin(hDTOD / diag);
 		a = angle_DAx - Math.PI/2 + parameters.get(Prm.BETA);
 		offset = (hDTOD + hHTOD * Math.sin(a))/Math.cos(a);
-		System.out.printf("offset=%f\n", offset);
+		// System.out.printf("offset=%f\n", offset);
 
 		getPoint(W.D).setLocation(	getPoint(W.R).getX() - offset * cos_BETA,
 						getPoint(W.R).getY() + offset * sin_BETA);
 
 		
-		dist_H = (getPoint(W.C).getY()-getPoint(W.D).getY())/sin_BETA;
 
 		// Seatstay angle
 		angle_BEx = Math.atan((getPoint(W.Bs).getY() - getPoint(W.E).getY()) / (getPoint(W.Bs).getX() - getPoint(W.E).getX()));
-		System.out.printf("Lambda=%f\n", angle_BEx);
+		// System.out.printf("Lambda=%f\n", angle_BEx);
 			
 		/* Cross-member intersection 
 		 *
@@ -722,7 +791,7 @@ public class Geometry {
 		/* Fork curve */
 		
 		FBA = get_FBA();
-		System.out.printf("Fork bend angle: %f\n", FBA * 180/Math.PI);
+		// System.out.printf("Fork bend angle: %f\n", FBA * 180/Math.PI);
 		getPoint(W.K).setLocation(	getPoint(W.C).getX() + (dist_L / dist_Lprime) * (dist_Lprime + dist_Gdelta - parameters.get(Prm.FBR) * Math.sin(FBA)) / tan_BETA,
 			
 						getPoint(W.C).getY() - (dist_L / dist_Lprime) * (dist_Lprime + dist_Gdelta - parameters.get(Prm.FBR) * Math.sin(FBA))); // fork bend start (center)
@@ -737,8 +806,9 @@ public class Geometry {
 
 
 		// Projection of the steerer tube on the floor line
-		getPoint(W.Kp).setLocation(	getPoint(W.D).getX() + (getPoint(W.D).getY() - getPoint(W.Kp).getY()) / Math.tan( parameters.get(Prm.BETA) ) ,
-						parameters.get(Prm.drop) - parameters.get(Prm.WR)) ;
+		Double KpY = parameters.get(Prm.drop) - parameters.get(Prm.WR);
+		getPoint(W.Kp).setLocation(	getPoint(W.D).getX() + (getPoint(W.D).getY() - KpY) / Math.tan( parameters.get(Prm.BETA) ) ,
+						KpY) ;
 
 		// Projection of front dropout on the floor line
 		getPoint(W.Gp).setLocation( 	getPoint(W.G).getX(),
@@ -750,39 +820,37 @@ public class Geometry {
 						getPoint(W.C).getY() + sin_BETA * parameters.get(Prm.STMH));
 		getPoint(W.Stmf).setLocation(	getPoint(W.Stmr).getX() + parameters.get(Prm.STML),
 						getPoint(W.Stmr).getY()) ;
+
+		// projection of the front axle on the steering axis
+		getPoint(W.Gps).setLocation(	getPoint(W.G).getX() - parameters.get(Prm.FR)*Math.cos(Math.PI/2.0-parameters.get(Prm.BETA)),
+						getPoint(W.G).getY() - parameters.get(Prm.FR)*Math.sin(Math.PI/2.0-parameters.get(Prm.BETA)));
+						
 	
 	
 	}
 
 	private void compute_distances(){
 		
-		dist_X = Math.sqrt(parameters.get(Prm.TTL) * parameters.get(Prm.TTL) + dist_H * dist_H - 2 * parameters.get(Prm.TTL) * dist_H * Math.cos(Math.PI - parameters.get(Prm.BETA)));
-		angle_CBD = 2 * Math.atan(Math.sqrt((dist_H * dist_H - (dist_X - parameters.get(Prm.TTL)) * (dist_X - parameters.get(Prm.TTL))) / ((parameters.get(Prm.TTL) + dist_X) * (parameters.get(Prm.TTL) + dist_X) - dist_H * dist_H)));
-		dist_Hdelta = (getPoint(W.D).getY()-getPoint(W.F).getY())/sin_BETA;
 
-		dist_dtl = Math.sqrt(parameters.get(Prm.STL) * parameters.get(Prm.STL) + dist_X * dist_X - 2 * parameters.get(Prm.STL) * dist_X * Math.cos(parameters.get(Prm.ALPHA) - angle_CBD));
-		dist_ssl = Math.sqrt(parameters.get(Prm.CSL) * parameters.get(Prm.CSL) + parameters.get(Prm.STL) * parameters.get(Prm.STL) - 2 * parameters.get(Prm.CSL) * parameters.get(Prm.STL) * Math.cos(angle_EAB));
-		dist_ttl_actual = ( parameters.get(Prm.SIGMA) == 0.0 ? parameters.get(Prm.TTL) : (parameters.get(Prm.TTL) / Math.sin(parameters.get(Prm.SIGMA))) / (1/tan_ALPHA + (cotan(parameters.get(Prm.SIGMA)))));
-		dist_ssl_actual = Math.sqrt(parameters.get(Prm.CSL) * parameters.get(Prm.CSL) + (parameters.get(Prm.STL) - dist_Sdelta) * (parameters.get(Prm.STL) - dist_Sdelta) - 2 * parameters.get(Prm.CSL) * (parameters.get(Prm.STL) - dist_Sdelta) * Math.cos(angle_EAB));
+		indicators.put(INDICATOR.PEDAL_CLEARANCE, parameters.get(Prm.WR) - (parameters.get(Prm.drop) + parameters.get(Prm.CL)));
+		indicators.put(INDICATOR.TRAIL, (parameters.get(Prm.WR) * cos_BETA - parameters.get(Prm.FR)) / sin_BETA);
+		indicators.put(INDICATOR.BB_HEIGHT, parameters.get(Prm.WR) - parameters.get(Prm.drop));
+		indicators.put(INDICATOR.WHEELBASE, getPoint(W.G).getX() - getPoint(W.E).getX());
+		indicators.put(INDICATOR.CROSS_MEMBER_LENGTH, Math.sqrt( (getPoint(W.C).getX() - getPoint(W.E).getX()) * (getPoint(W.C).getX() - getPoint(W.E).getX()) + (getPoint(W.C).getY() - getPoint(W.E).getY()) * (getPoint(W.C).getY() - getPoint(W.E).getY()) ));
 
-		System.out.printf("DT_length=%f SS_length=%f TT_length (actual)=%f SS_length (actual)=%f\n",dist_dtl, dist_ssl, dist_ttl_actual, dist_ssl_actual);
-		System.out.printf("\n");
+		indicators.put(INDICATOR.STANDOVER, indicators.get(INDICATOR.BB_HEIGHT) + parameters.get(Prm.STL)*cos_ALPHAc);
+		indicators.put(INDICATOR.BB_TO_FRONT, getPoint(W.A).distance(getPoint(W.G)));
 
-		dist_standover = dist_L + parameters.get(Prm.WR);
-		dist_pedal_clearance = parameters.get(Prm.WR) - (parameters.get(Prm.drop) + parameters.get(Prm.CL));
-		dist_trail = (parameters.get(Prm.WR) * cos_BETA - parameters.get(Prm.FR)) / sin_BETA;
-
-		dist_cross_member_length = Math.sqrt( (getPoint(W.C).getX() - getPoint(W.E).getX()) * (getPoint(W.C).getX() - getPoint(W.E).getX()) + (getPoint(W.C).getY() - getPoint(W.E).getY()) * (getPoint(W.C).getY() - getPoint(W.E).getY()) );
-		dist_wheelbase = getPoint(W.G).getX() - getPoint(W.E).getX();
-		dist_bb2front = Math.sqrt(getPoint(W.G).getX() * getPoint(W.G).getX() + parameters.get(Prm.drop) * parameters.get(Prm.drop));
-		dist_overlap = dist_bb2front - (parameters.get(Prm.WR) + parameters.get(Prm.CL)) - (parameters.get(Prm.FFL) + parameters.get(Prm.FC));
+		
+		//indicators.put(INDICATOR.TOE_OVERLAP, indicators.put(INDICATOR.BB_TO_FRONT - (parameters.get(Prm.WR) + parameters.get(Prm.CL)) - (parameters.get(Prm.FFL) + parameters.get(Prm.FC)));
+		//indicators.put(INDICATOR.TOE_OVERLAP, compute_toe_overlap());
 
 
-		dist_saddle_height = get_lemonds_saddle_height( parameters.get(Prm.PBH) );
+		indicators.put(INDICATOR.SADDLE_HEIGHT, get_lemonds_saddle_height( parameters.get(Prm.PBH) ));
 
 
-		System.out.printf("Trail=%f Wheelbase=%f Standover=%f Pedal clearance=%f Overlap=%f CM-length: %f\n", 
-			dist_trail, dist_wheelbase, dist_standover, dist_pedal_clearance, dist_overlap, dist_cross_member_length);
+		// System.out.printf("Trail=%f Wheelbase=%f Standover=%f BB height=%f Pedal clearance=%f Overlap=%f\n",
+		//	indicators.get(INDICATOR.TRAIL), indicators.get(INDICATOR.WHEELBASE), indicators.get(INDICATOR.STANDOVER), indicators.get(INDICATOR.BB_HEIGHT), indicators.get(INDICATOR.PEDAL_CLEARANCE), indicators.get(INDICATOR.TOE_OVERLAP));
 
 		
 		// Distance to centerline of seatstay bridge (5mm is leather washer + boss)
@@ -797,12 +865,30 @@ public class Geometry {
 
 		// angle between seatstay bridge and seatstay
 		// (account for the fact that the SS starts ~ 20mm above the axle center line) 
+		Double dist_ssl = Math.sqrt(parameters.get(Prm.CSL) * parameters.get(Prm.CSL) + parameters.get(Prm.STL) * parameters.get(Prm.STL) - 2 * parameters.get(Prm.CSL) * parameters.get(Prm.STL) * Math.cos(angle_EAB));
 		double beta = Math.atan(  (dist_ssl-25)  / ((parameters.get(Prm.RAW)/2)-(parameters.get(Prm.STOD)/2)));
 		// bridge shortest width
 		double bridge_shortest_width = (dist_ssl - axle_to_bridge_top)*2 /Math.tan(beta) + parameters.get(Prm.STOD);
 
-		System.out.printf("Distance to top of SS bridge=%f\nAngle SS/bridge=%f\nBridge shortest width=%f\n", axle_to_bridge_top, degrees(beta), bridge_shortest_width );
+		// System.out.printf("Distance to top of SS bridge=%f\nAngle SS/bridge=%f\nBridge shortest width=%f\n", axle_to_bridge_top, degrees(beta), bridge_shortest_width );
 
+	}
+
+
+	private void compute_henry_james_points(){
+		// intersection of steering axis with x axis
+		getPoint(W.HJamesX).setLocation( 
+			getPoint(W.C).getX() + getPoint(W.C).getY()/Math.tan(parameters.get(Prm.BETA)),
+			0
+		);
+		indicators.put(INDICATOR.HJX, getPoint(W.HJamesX).getX());
+
+		getPoint(W.HJamesY).setLocation(
+			(getPoint(W.Sf).getX()+getPoint(W.Sb).getX())/2,
+			(getPoint(W.Sf).getY()+getPoint(W.Sb).getY())/2
+		);
+		
+		indicators.put(INDICATOR.HJY, getPoint(W.HJamesX).distance( getPoint(W.HJamesY) ));
 
 	}
 
@@ -839,8 +925,10 @@ public class Geometry {
 	}
 
 	private Double slope_point(Double sl, Point2D p){
+		// given slope and a point, compute intersection with y axis (b)
 		return p.getY() - sl * p.getX();
 	}
+
 
 
 	private void compute_contours(){
@@ -850,6 +938,7 @@ public class Geometry {
 		contour_fork();
 		contour_seatstay();
 		contour_crank();
+		compute_toe_overlap();
 
 	}
 
@@ -1001,19 +1090,30 @@ public class Geometry {
 		// Where top TT line intersects w/ ST
 		getPoint(W.Bsor).setLocation( intersect( -tan_ALPHA, st_y_intercept_upper, tan_SIGMA, tt_y_intercept_upper));
 
-		// Pedal position: closest to front wheel
+		// Pedal position: closest to front wheel?
 		getPoint(W.H).setLocation(
-			getPoint(W.G).getX() * parameters.get(Prm.CL) / dist_bb2front,
-			parameters.get(Prm.drop) * parameters.get(Prm.CL) / dist_bb2front);
+			getPoint(W.G).getX() * parameters.get(Prm.CL) / indicators.get(INDICATOR.BB_TO_FRONT),
+			parameters.get(Prm.drop) * parameters.get(Prm.CL) / indicators.get(INDICATOR.BB_TO_FRONT));
+		// Pedal position: horizontal?
+		getPoint(W.H).setLocation(
+			parameters.get(Prm.CL),
+			0D
+		);
 		
 		getPoint(W.Hw).setLocation(
-			getPoint(W.G).getX() * (1 - parameters.get(Prm.WR) / dist_bb2front),
-			getPoint(W.G).getY() * (1 - parameters.get(Prm.WR) / dist_bb2front));
+			getPoint(W.G).getX() * (1 - parameters.get(Prm.WR) / indicators.get(INDICATOR.BB_TO_FRONT)),
+			getPoint(W.G).getY() * (1 - parameters.get(Prm.WR) / indicators.get(INDICATOR.BB_TO_FRONT)));
 
 		// Overlapping point on front fender
 		getPoint(W.Hf).setLocation(
-			getPoint(W.G).getX() * (1 - (parameters.get(Prm.WR)+parameters.get(Prm.FC)) /  dist_bb2front),
-			getPoint(W.G).getY() * (1 - (parameters.get(Prm.WR)+parameters.get(Prm.FC)) /  dist_bb2front));
+			getPoint(W.G).getX() * (1 - (parameters.get(Prm.WR)+parameters.get(Prm.FC)) /  indicators.get(INDICATOR.BB_TO_FRONT)),
+			getPoint(W.G).getY() * (1 - (parameters.get(Prm.WR)+parameters.get(Prm.FC)) /  indicators.get(INDICATOR.BB_TO_FRONT)));
+
+		// projecting Hf on the steerer axis
+		getPoint(W.Hfs).setLocation(
+			intersect( tan_BETAc, slope_point(tan_BETAc, getPoint(W.Hf)), -tan_BETA, slope_point(-tan_BETA, getPoint(W.D)))
+		);
+
 	
 	
 	};
@@ -1045,8 +1145,6 @@ public class Geometry {
 
 	private void contour_fork(){
 	
-
-	
 		Double FBA = get_FBA();
 		Double tg2 = Math.tan(parameters.get(Prm.BETA)-FBA);
 		Point2D tmp_pt;
@@ -1070,7 +1168,7 @@ public class Geometry {
 		Double angle_at_offset = parameters.get(Prm.BETA)+angle_front_offset-FBA;
 
 		
-		System.out.printf("Blade diameter: %f\n", parameters.get(Prm.BUD)-decrease*2);
+		// System.out.printf("Blade diameter: %f\n", parameters.get(Prm.BUD)-decrease*2);
 		getPoint(W.M).setLocation( getPoint(W.K).getX() + ((parameters.get(Prm.BUD)/2)-decrease) * cos_BETAc, // fork bend start (upper)
 			getPoint(W.K).getY() + ((parameters.get(Prm.BUD)/2)-decrease) * sin_BETAc);
 		getPoint(W.N).setLocation( getPoint(W.K).getX() - ((parameters.get(Prm.BUD)/2)-decrease) * cos_BETAc, // fork bend start (lower)
@@ -1198,6 +1296,16 @@ public class Geometry {
 		getPoint(W.Stlf).setLocation( getPoint(W.Stuf).getX(),
 				getPoint(W.Stlr).getY());
 	
+		// head-tube, steering axis point
+		getPoint(W.Stbm).setLocation(	(getPoint(W.Stbl).getX() + getPoint(W.Stbr).getX())/2,
+						(getPoint(W.Stbl).getY() + getPoint(W.Stbr).getY())/2 );
+		// System.out.printf("Stbm: %f, %f", getPoint(W.Stbm).getX(), getPoint(W.Stbm).getY());
+		// above head-tube, steering axis point (end of threaded steerer)
+		getPoint(W.Stbh).setLocation(
+						getPoint(W.Stbm).getX() - Math.cos(parameters.get(Prm.BETA))*parameters.get(Prm.THS),
+						getPoint(W.Stbm).getY() + Math.sin(parameters.get(Prm.BETA))*parameters.get(Prm.THS));
+		indicators.put(INDICATOR.STEERER_LENGTH, 
+			getPoint(W.Stbh).distance( getPoint(W.F)));
 	};
 
 	private void contour_seatstay(){
@@ -1362,8 +1470,64 @@ public class Geometry {
 		Double c = getPoint(W.G).getX() * getPoint(W.G).getX() + (getPoint(W.Tce).getY() - getPoint(W.G).getY()) * (getPoint(W.Tce).getY() - getPoint(W.G).getY()) - (parameters.get(Prm.WR)+parameters.get(Prm.FC)) * (parameters.get(Prm.WR)+parameters.get(Prm.FC));
 
 		getPoint(W.Tcw).setLocation( (-b - Math.sqrt(b*b - 4*c))/2, getPoint(W.Tce).getY());
-	
+
+
+		indicators.put(INDICATOR.TOE_OVERLAP, compute_toe_overlap());
+
 	};
+
+	private Double compute_toe_overlap() {
+		// 
+		// Calculate the motion of the point on the wheel that is
+		// closest (perpendicular) to the axis: the point rises as the wheel
+		// turns, reaching the position closest to the pedal when the crank 
+		// is approximately horizontal.
+
+		// A: toeclip end point, from above (y = middle of pedal platform)
+		Double pedal_x = getPoint(W.Tce).getX();
+		Double pedal_y = 0D;
+		Double pedal_z = parameters.get(Prm.QF)/2.0 + 50D;
+		System.out.printf("\nPedal point: %f, %f, %f\n", pedal_x, pedal_y, pedal_z);
+
+		Double alpha = 0D;
+		Double y_delta = 0D;
+		Double x_delta = 0D;
+		Double z_delta = 0D;
+		Double steps = 20D;
+		Double twr = getPoint(W.Hf).distance(getPoint(W.Hfs));//parameters.get(Prm.WR) - parameters.get(Prm.FR);
+
+		// deltas are applied to the reference point that is the projection of the front axle
+		// on the steering axis
+		Double x_orig = getPoint(W.Hfs).getX();
+		Double y_orig = getPoint(W.Hfs).getY();
+		Double z_orig = 0D;
+
+		Double min_distance = 1000D;
+
+		for (int i=0; i<=steps; i++){
+			
+			alpha = i/steps * Math.PI/2.0;
+			x_delta = twr * Math.cos(alpha) * Math.sin(parameters.get(Prm.BETA));
+			y_delta = twr * Math.cos(alpha) * Math.cos(parameters.get(Prm.BETA));
+			z_delta = twr * Math.sin(alpha);
+			//System.out.printf("%d: Alpha: %f --> x_delta: %f y_delta: %f z_delta: %f\n", i, alpha, x_delta, y_delta, z_delta );
+
+			Double x_new = x_orig - x_delta;
+			Double y_new = y_orig - y_delta;
+			Double z_new = z_orig + z_delta;
+			//System.out.printf("%d: Alpha: %f --> x_new: %f y_new: %f z_new: %f\n", i, alpha, x_new, y_new, z_new );
+
+			min_distance = Math.min(
+				min_distance,
+				Math.sqrt( (x_new-pedal_x)*(x_new-pedal_x) + (y_new-pedal_y)*(y_new-pedal_y) + (z_new-pedal_z)*(z_new-pedal_z))
+			);
+
+			//System.out.printf("  Distance = %f\n", min_distance);
+		}
+
+		return -min_distance;
+		
+	}
 
 	private void compute_rear_fork(){
 	
@@ -1426,7 +1590,7 @@ public class Geometry {
 
 		// Iterating (by interval searching), until desired clearance
 		// is obtained on the curve
-		dist_rt_clearance_curved = 0.0;
+		Double dist_rt_clearance_curved = 0.0;
 		Double l1, L1, h1;
 		Double angle_a1 = 0.0, angle_mu = 0.0;
 		int iter=1;
@@ -1440,7 +1604,7 @@ public class Geometry {
 
 			getPoint(W.rJl).setLocation( getPoint(W.rJl).getX(), (left + right)/2.0);
 
-			System.out.printf("Iteration %d\n", iter);
+			// System.out.printf("Iteration %d\n", iter);
 
 			// Constructing the Bezier control points for the inner curvature
 			// using Jl as middle control point
@@ -1473,7 +1637,7 @@ public class Geometry {
 
 			// Line B2B3 is tangent to the curve in (B2+B3)/2
 			dist_rt_clearance_curved = -hTW - (getPoint(W.B2).getY() + getPoint(W.B3).getY())/2.0;
-			System.out.printf("Actual clearance = %f\n", dist_rt_clearance_curved);
+			// System.out.printf("Actual clearance = %f\n", dist_rt_clearance_curved);
 
 			if (dist_rt_clearance_curved > parameters.get(Prm.RTSC)){
 				right = getPoint(W.rJl).getY();
@@ -1540,55 +1704,50 @@ public class Geometry {
 			getPoint(W.rMr).getX(),
 			-parameters.get(Prm.QF)/2 + parameters.get(Prm.CAW));
 
-		System.out.printf("BB->crank: %f\n", parameters.get(Prm.QF)/2 - (parameters.get(Prm.CAW) + parameters.get(Prm.BBW)/2));
+		// System.out.printf("BB->crank: %f\n", parameters.get(Prm.QF)/2 - (parameters.get(Prm.CAW) + parameters.get(Prm.BBW)/2));
 	
 	}
 
 	private void compute_rear_fork_distances(){
 	
-		double xs = getPoint(W.rF).getX() - getPoint(W.rG).getX();
-		double ys = getPoint(W.rF).getY() - getPoint(W.rG).getY();
-		double xc1 = getPoint(W.rF).getX() - getPoint(W.rJ).getX();
-		double yc1 = getPoint(W.rF).getY() - getPoint(W.rJ).getY();
-		double xc2 = getPoint(W.rJ).getX() - getPoint(W.rG).getX();
-		double yc2 = getPoint(W.rJ).getY() - getPoint(W.rG).getY();
-		double xc3 = getPoint(W.rJr).getX() - getPoint(W.rGr).getX();
-		double yc3 = getPoint(W.rJr).getY() - getPoint(W.rGr).getY();
-		double xc4 = getPoint(W.rFr).getX() - getPoint(W.rGr).getX();
-		double yc4 = getPoint(W.rFr).getY() - getPoint(W.rGr).getY();
-		Point2D closest_to_crank = new Point2D.Double() ;
+		//double xs = getPoint(W.rF).getX() - getPoint(W.rG).getX();
+		//double ys = getPoint(W.rF).getY() - getPoint(W.rG).getY();
+		//double xc1 = getPoint(W.rF).getX() - getPoint(W.rJ).getX();
+		//double yc1 = getPoint(W.rF).getY() - getPoint(W.rJ).getY();
+		//double xc2 = getPoint(W.rJ).getX() - getPoint(W.rG).getX();
+		//double yc2 = getPoint(W.rJ).getY() - getPoint(W.rG).getY();
+		//double xc4 = getPoint(W.rFr).getX() - getPoint(W.rGr).getX();
+		//double yc4 = getPoint(W.rFr).getY() - getPoint(W.rGr).getY();
 		
 		// Angle for straight chainstay (center)
-		angle_epsilon = Math.atan((getPoint(W.rF).getX() - getPoint(W.rG).getX()) / (getPoint(W.rF).getY() - getPoint(W.rG).getY()) );
-		dist_csl_straight = Math.sqrt( xs*xs + ys*ys );
+		indicators.put(INDICATOR.CHAINSTAY_ANGLE_STRAIGHT, Math.atan((getPoint(W.rF).getX() - getPoint(W.rG).getX()) / (getPoint(W.rF).getY() - getPoint(W.rG).getY()) ));
+		// Angle for curved chainstay (center)
+		indicators.put(INDICATOR.CHAINSTAY_ANGLE_CURVED, Math.atan((getPoint(W.rF).getX() - getPoint(W.rJ).getX()) / (getPoint(W.rF).getY() - getPoint(W.rJ).getY())));
 
 		// Crank clearance for straight chainstay
-		closest_to_crank.setLocation( 
-			getPoint(W.rMl).getX(),
-			getPoint(W.rFr).getY() - (yc4/xc4) * (getPoint(W.rFr).getX() - getPoint(W.rMl).getX())); 
-
-		dist_straight_crank_clearance = closest_to_crank.getY() - getPoint(W.rMl).getY();
-
-		// Angle for curved chainstay (center)
-		angle_psi=Math.atan((getPoint(W.rF).getX() - getPoint(W.rJ).getX()) / (getPoint(W.rF).getY() - getPoint(W.rJ).getY()));
-		dist_csl_curved = Math.sqrt( xc1*xc1 + yc1*yc1) + Math.sqrt( xc2*xc2 + yc2*yc2 );
+		indicators.put(INDICATOR.CRANK_CLEARANCE_STRAIGHT, distance_to_segment(getPoint(W.rMl), getPoint(W.rGr), getPoint(W.rFr)) );
 
 		// Crank clearance for curved chainstay
-		closest_to_crank.setLocation(
-			closest_to_crank.getX(),
-			getPoint(W.rJr).getY() - (yc3/xc3) * (getPoint(W.rJr).getX() - closest_to_crank.getX()));
-		getPoint(W.rN).setLocation( closest_to_crank );
-		dist_curved_crank_clearance = closest_to_crank.getY() - getPoint(W.rMl).getY();
+		indicators.put(INDICATOR.CRANK_CLEARANCE_CURVED,  distance_to_segment(getPoint(W.rMl), getPoint(W.rGr), getPoint(W.rJr)) );
 		
-		dist_rt_clearance_straight = - (parameters.get(Prm.TW)/2) - getPoint(W.rI).getY();
-
-		System.out.printf("Straight chainstay: length = %f angle = %f, T-clearance = %f, C-clearance = %f\n", 
-						dist_csl_straight, degrees(angle_epsilon), dist_rt_clearance_straight, dist_straight_crank_clearance);
-		System.out.printf("Curved chainstay: length = %f angle = %f, T-clearance = %f, C-clearance = %f\n",
-						dist_csl_curved, degrees(angle_psi), dist_rt_clearance_curved, dist_curved_crank_clearance);
-		
-
 	
+	}
+
+
+	private Double distance_to_segment(Point2D pt, Point2D pt1, Point2D pt2){
+		
+		Double distance = 0D;
+		Double slope = (pt2.getY()-pt1.getY())/(pt2.getX()-pt1.getX());
+
+		// equation of the form ax + by + c = 0
+		Double a = -slope;
+		Double b = 1D;
+		Double c = slope*pt1.getX()-pt1.getY();
+
+		// d = |ax_0 + by_0 + c| / sqrt( a^2 + b^2 ) 
+		distance = Math.abs( a*pt.getX() + b*pt.getY() + c ) / Math.sqrt( a*a + b*b);
+		
+		return distance;
 	}
 
 	private void compute_body(){}

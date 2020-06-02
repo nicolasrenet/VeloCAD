@@ -44,11 +44,17 @@ public class Sketch implements ActionListener {
 
 	public final static void main(String[] args){
 		
-		Sketch sk = new Sketch();
+		String config = null;
+
+		System.out.printf("\ncount=%d, arg0= %s", args.length, args[0]);
+		if (args.length>0){
+			config =  args[0] ;
+		}
+		Sketch sk = new Sketch(config);
 
 	}
 
-	public Sketch(){
+	public Sketch(String config){
 	
 		setUIFont (new javax.swing.plaf.FontUIResource("Tahoma",Font.PLAIN,12));
 
@@ -135,7 +141,9 @@ public class Sketch implements ActionListener {
 
 		tabs.requestFocusInWindow();
 	
-		presenter.loadFromXMLFile(new File("650B_randonneur.cfg")); 
+		if (config != null){
+			presenter.loadFromXMLFile(new File(config));
+		}
 		masterFrame.setVisible(true);
 
 	}

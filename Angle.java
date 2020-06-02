@@ -112,7 +112,7 @@ public class Angle extends Measure {
 			center.getX() +  Math.cos( halfExtent ) * (offset + labelOffset),
 			center.getY() +  Math.sin( halfExtent ) * (offset + labelOffset));
 
-		System.out.println("startAngle = " + degrees( startAngle ));
+		// System.out.println("startAngle = " + degrees( startAngle ));
 		
 	}
 
@@ -120,7 +120,7 @@ public class Angle extends Measure {
 	public void draw( Graphics2D g){
 
 			
-		System.out.println("Arc2D.Double(" + center.getX() + ", " + center.getY() + ", " +  offset + ", " + degrees(startAngle) + ", " + degrees(value) );
+		// System.out.println("Arc2D.Double(" + center.getX() + ", " + center.getY() + ", " +  offset + ", " + degrees(startAngle) + ", " + degrees(value) );
 		Arc2D arc = new Arc2D.Double(	center.getX()-offset, center.getY()-offset,
 						offset*2.0D, offset*2.0D,
 						degrees(-startAngle), 

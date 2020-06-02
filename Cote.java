@@ -79,7 +79,7 @@ public class Cote extends Measure {
 	}
 
 	public void update(){
-		System.out.println("Cote.udpate()");
+		// System.out.println("Cote.update()");
 
 		value = start.distance( end );
 		double deltaX =  (offset / value) * Math.abs(end.getY() - start.getY());
@@ -88,11 +88,11 @@ public class Cote extends Measure {
 		double labelOffset = 20D;
 		if (position == Position.NORTH){
 			arrowStart = new Point2D.Double ( start.getX() - sign * deltaX, start.getY() + deltaY );
-			System.out.println( start.getX() + " - " + sign + " * " + deltaX );
+			// System.out.println( start.getX() + " - " + sign + " * " + deltaX );
 			arrowEnd = new Point2D.Double ( end.getX() - sign * deltaX, end.getY() + deltaY );
 		} else {
 			arrowStart = new Point2D.Double ( start.getX() + sign * deltaX, start.getY() - deltaY );
-			System.out.println( start.getX() + " + " + sign + " * " + deltaX );
+			// System.out.println( start.getX() + " + " + sign + " * " + deltaX );
 			arrowEnd = new Point2D.Double ( end.getX() + sign * deltaX, end.getY() - deltaY );
 		}
 

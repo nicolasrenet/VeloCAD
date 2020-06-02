@@ -8,6 +8,8 @@ import java.awt.event.MouseListener;
 import javax.swing.JPanel;
 import java.lang.Math;
 import java.util.List;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 
 public final class SideViewPane extends ViewPane {
@@ -28,7 +30,7 @@ public final class SideViewPane extends ViewPane {
 
 	@Override
 	protected void setDimensions(){
-		System.out.println("Adding dimensions...");
+		// System.out.println("Adding dimensions...");
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.A, Geometry.W.D, Cote.Position.SOUTH ).offset(40).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.E, Geometry.W.B, Cote.Position.SOUTH ).offset(30).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.E, Geometry.W.A, Cote.Position.SOUTH ).offset(40D).build());
@@ -37,11 +39,11 @@ public final class SideViewPane extends ViewPane {
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.Tce, Geometry.W.Tcw, Cote.Position.SOUTH).offset(20D).minZoomLevel(0).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.C, Geometry.W.D, Cote.Position.NORTH).offset(30D).minZoomLevel(0).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.BodySeat, Geometry.W.BodyShoulder, Cote.Position.SOUTH).offset(0D).minZoomLevel(0).build());
-		this.dimensions.add( new Cote.Builder( jd, Geometry.W.BodyShoulder, Geometry.W.Stuf, Cote.Position.SOUTH).offset(0D).minZoomLevel(0).build());
 		this.dimensions.add( new Angle.Builder( jd, Geometry.W.A, Geometry.W.E, Geometry.W.Bs).build()) ;
 		this.dimensions.add( new Angle.Builder( jd, Geometry.W.A, Geometry.W.E, Geometry.W.Bs).build()) ;
 		this.dimensions.add( new Angle.Builder( jd, Geometry.W.B, Geometry.W.A, Geometry.W.E).build()) ;
 		this.dimensions.add( new Angle.Builder( jd, Geometry.W.A, Geometry.W.Bs, Geometry.W.C).build()) ;
+		this.dimensions.add( new Angle.Builder( jd, Geometry.W.Bs, Geometry.W.C, Geometry.W.D).build()) ;
 		//this.dimensions.add( new Angle.Builder( jd, Geometry.W.J, Geometry.W.C, Geometry.W.D).offset(10D).build()) ;
 		this.dimensions.add( new Angle.Builder( jd, Geometry.W.C, Geometry.W.D, Geometry.W.A).offset(10D).build()) ;
 		this.dimensions.add( new Angle.Builder( jd, Geometry.W.D, Geometry.W.A, Geometry.W.B).offset(60D).build()) ;
@@ -51,6 +53,10 @@ public final class SideViewPane extends ViewPane {
 		//this.dimensions.add( new Cote.Builder( jd, Geometry.W.B, Geometry.W.D, Cote.Position.SOUTH).offset(0D).minZoomLevel(0).build());
 		//this.dimensions.add( new Cote.Builder( jd, Geometry.W.C, Geometry.W.D, Cote.Position.SOUTH).offset(0D).minZoomLevel(0).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.A, Geometry.W.Bs, Cote.Position.NORTH).offset(2D).minZoomLevel(0).build());
+
+		this.dimensions.add( new Cote.Builder( jd, Geometry.W.HJamesY, Geometry.W.HJamesX, Cote.Position.SOUTH).offset(40).build());
+		this.dimensions.add( new Cote.Builder( jd, Geometry.W.A, Geometry.W.HJamesX, Cote.Position.SOUTH).offset(40).build());
+		this.dimensions.add( new Cote.Builder( jd, Geometry.W.Stbh, Geometry.W.F, Cote.Position.NORTH).offset(60D).build());
 	}
 
 
@@ -139,8 +145,8 @@ public final class SideViewPane extends ViewPane {
 		
 
 		/* Fork line (virtual) */
-		gp.moveTo( jd.getPoint( Geometry.W.F ).getX(), jd.getPoint( Geometry.W.F ).getY());
-		gp.lineTo( jd.getPoint( Geometry.W.G ).getX(), jd.getPoint( Geometry.W.G ).getY());
+		//gp.moveTo( jd.getPoint( Geometry.W.F ).getX(), jd.getPoint( Geometry.W.F ).getY());
+		gp.moveTo( jd.getPoint( Geometry.W.G ).getX(), jd.getPoint( Geometry.W.G ).getY());
 		gp.lineTo( jd.getPoint( Geometry.W.Gp ).getX(), jd.getPoint( Geometry.W.Gp ).getY());
 		gp.moveTo( jd.getPoint( Geometry.W.K ).getX(), jd.getPoint( Geometry.W.K ).getY());
 		gp.lineTo( jd.getPoint( Geometry.W.Kp ).getX(), jd.getPoint( Geometry.W.Kp ).getY());
@@ -186,6 +192,8 @@ public final class SideViewPane extends ViewPane {
 		drawStem( g2 );
 		drawRearTriangle( g2, frameType );
 		drawCrank( g2 );
+
+		drawCartouche(g2);
 
 	}
 
@@ -306,19 +314,15 @@ public final class SideViewPane extends ViewPane {
 		GeneralPath gp = new GeneralPath();
 
 		// Fork crown lug
-		gp.moveTo(jd.getPoint( Geometry.W.Tb ).getX(), jd.getPoint( Geometry.W.Tb ).getY());
+		gp.moveTo(jd.getPoint( Geometry.W.Vf ).getX(), jd.getPoint( Geometry.W.Vf ).getY());
+		gp.lineTo(jd.getPoint( Geometry.W.Uf ).getX(), jd.getPoint( Geometry.W.Uf ).getY());
+		gp.lineTo(jd.getPoint( Geometry.W.Tf ).getX(), jd.getPoint( Geometry.W.Tf ).getY());
+		gp.lineTo(jd.getPoint( Geometry.W.Tb ).getX(), jd.getPoint( Geometry.W.Tb ).getY());
 		gp.lineTo(jd.getPoint( Geometry.W.Ub ).getX(), jd.getPoint( Geometry.W.Ub ).getY());
 		gp.lineTo(jd.getPoint( Geometry.W.Vb ).getX(), jd.getPoint( Geometry.W.Vb ).getY());
-		gp.curveTo(
-			jd.getPoint( Geometry.W.G1 ).getX(), jd.getPoint( Geometry.W.G1 ).getY(),
-			jd.getPoint( Geometry.W.G2 ).getX(), jd.getPoint( Geometry.W.G2 ).getY(),
-			jd.getPoint( Geometry.W.G0 ).getX(), jd.getPoint( Geometry.W.G0 ).getY());
-		gp.curveTo(
-			jd.getPoint( Geometry.W.G3 ).getX(), jd.getPoint( Geometry.W.G3 ).getY(),
-			jd.getPoint( Geometry.W.G4 ).getX(), jd.getPoint( Geometry.W.G4 ).getY(),
-			jd.getPoint( Geometry.W.Vf ).getX(), jd.getPoint( Geometry.W.Vf ).getY());
-		gp.lineTo( jd.getPoint( Geometry.W.Uf ).getX(), jd.getPoint( Geometry.W.Uf ).getY());
-		gp.lineTo( jd.getPoint( Geometry.W.Tf ).getX(), jd.getPoint( Geometry.W.Tf ).getY());
+		g2.draw(gp);
+		gp.reset();
+
 		g2.draw(gp);
 		gp.reset();
 		
@@ -339,9 +343,16 @@ public final class SideViewPane extends ViewPane {
 			jd.getPoint( Geometry.W.N ).getX(), jd.getPoint( Geometry.W.N ).getY());
 		gp.lineTo(jd.getPoint( Geometry.W.Vb ).getX(), jd.getPoint( Geometry.W.Vb ).getY());
 
-		// Fork tip
-		gp.moveTo(jd.getPoint( Geometry.W.Gl ).getX(), jd.getPoint( Geometry.W.Gl ).getY());
-		gp.lineTo(jd.getPoint( Geometry.W.Gr ).getX(), jd.getPoint( Geometry.W.Gr ).getY());
+		gp.curveTo(
+			jd.getPoint( Geometry.W.G1 ).getX(), jd.getPoint( Geometry.W.G1 ).getY(),
+			jd.getPoint( Geometry.W.G2 ).getX(), jd.getPoint( Geometry.W.G2 ).getY(),
+			//jd.getPoint( Geometry.W.G0 ).getX(), jd.getPoint( Geometry.W.G0 ).getY());
+			jd.getPoint( Geometry.W.Fl ).getX(), jd.getPoint( Geometry.W.Fl ).getY());
+		gp.curveTo(
+			jd.getPoint( Geometry.W.G3 ).getX(), jd.getPoint( Geometry.W.G3 ).getY(),
+			jd.getPoint( Geometry.W.G4 ).getX(), jd.getPoint( Geometry.W.G4 ).getY(),
+			jd.getPoint( Geometry.W.Vf ).getX(), jd.getPoint( Geometry.W.Vf ).getY());
+
 		g2.setColor( Color.WHITE);
 		g2.fill( gp );
 		g2.setColor( Color.BLACK);
@@ -501,7 +512,7 @@ public final class SideViewPane extends ViewPane {
 		final double eyeRadius1 = 6D;
 		final double eyeRadius2 = 8D;
 		double overlapAngle = Math.atan( jd.getPoint( Geometry.W.G ).getY() / jd.getPoint( Geometry.W.G ).getX());
-		System.out.println("Overlap angle: " + overlapAngle );
+		// System.out.println("Overlap angle: " + overlapAngle );
 
 		// Vertical position
 		Arc2D arc = new Arc2D.Double( - jd.getRawParameter( Geometry.Prm.CER ), - jd.getRawParameter( Geometry.Prm.CER ),
@@ -596,8 +607,6 @@ public final class SideViewPane extends ViewPane {
 					  jd.getRawParameter( Geometry.Prm.STCD ), jd.getRawParameter( Geometry.Prm.STCD ), 0D, 360D, 0));
 		gp.reset();
 
-		
-
 	}
 	
 
@@ -605,10 +614,39 @@ public final class SideViewPane extends ViewPane {
 	protected void drawPoints(Graphics2D g){
 		g.setColor(Color.GRAY);
 		for (Geometry.W w: EnumSet.complementOf(EnumSet.range(Geometry.W.A1, Geometry.W.H6))){
+		//for (Geometry.W w: EnumSet.range(Geometry.W.A, Geometry.W.H6)){
 			if (w.getView() == Geometry.View.SIDE) drawPoint( g, w );
 		}
 		g.setColor(Color.BLACK);
 	}
 
+
+	private void drawCartouche( Graphics2D g){
+		
+
+		GeneralPath gp = new GeneralPath();
+		Point2D orig = new Point2D.Double( jd.getPoint( Geometry.W.A ).getX()-450, jd.getPoint( Geometry.W.A ).getY()-30);
+		gp.moveTo( orig.getX(), orig.getY() );
+		gp.lineTo( orig.getX() + 200, orig.getY() );
+		gp.lineTo( orig.getX() + 200, orig.getY()-150 );
+		gp.lineTo( orig.getX(), orig.getY()-150 );
+		gp.lineTo( orig.getX(), orig.getY());
+		g.draw(gp);
+
+		Double location_x = orig.getX()+10;
+		Double location_y = orig.getY()-10;
+
+		DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+
+		g.setFont( new Font(g.getFont().getName(), g.getFont().getStyle(), g.getFont().getSize()/2));
+		for (Geometry.INDICATOR id: Geometry.INDICATOR.values()){
+			if (id.getIsKeyDatum()){
+				location_y -= 10;
+				drawString(g, id.getShortDesc() + ":", location_x, location_y );
+				drawString(g, df.format( jd.getIndicator(id)), location_x+120, location_y );
+			}
+		}
+
+	}
 }
 

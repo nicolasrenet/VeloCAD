@@ -57,7 +57,7 @@ public abstract class ViewPane extends JPanel {
 	 */
 
 	protected ViewPane(){
-		System.out.println("Invoking superclass ViewPane() default constructor");
+		// System.out.println("Invoking superclass ViewPane() default constructor");
 
 		scale = 0.5D ;
 
@@ -85,7 +85,7 @@ public abstract class ViewPane extends JPanel {
 	public ViewPane(Geometry j){
 		
 		this();
-		System.out.println("Invoking superclass ViewPane(Geometry j) constructor");
+		// System.out.println("Invoking superclass ViewPane(Geometry j) constructor");
 
 		jd = j;
 
@@ -96,7 +96,7 @@ public abstract class ViewPane extends JPanel {
 	protected void update(){
 
 		for(Measure m: dimensions){
-			System.out.println("Updating dimension()");	
+			// System.out.println("Updating dimension()");	
 			m.update(); 
 		}
 
@@ -116,7 +116,7 @@ public abstract class ViewPane extends JPanel {
 
 	protected void paintComponent(Graphics g){
 
-		System.out.println("Invoking ViewPane.paintComponent()");
+		// System.out.println("Invoking ViewPane.paintComponent()");
 		
 		// Guarantees that the canvas gets erased before drawing
 		super.paintComponent(g);
@@ -163,7 +163,7 @@ public abstract class ViewPane extends JPanel {
 	}
 
 	public void toPdf(String fileName, String psz) throws IOException, DocumentException {
-		System.out.println("Export to PDF");
+		// System.out.println("Export to PDF");
 
 		com.itextpdf.text.Rectangle rect = PageSize.A0;
 		//double widthOffset = .8D;
@@ -182,7 +182,7 @@ public abstract class ViewPane extends JPanel {
 
 
 
-		System.out.println("PDF height: " + rect.getHeight() + " - PDF length: " + rect.getWidth() );
+		// System.out.println("PDF height: " + rect.getHeight() + " - PDF length: " + rect.getWidth() );
 
 		Document document = new Document( rect );
 
@@ -216,7 +216,7 @@ public abstract class ViewPane extends JPanel {
 	}
 
 	public void center(int x, int y){
-		System.out.println("ViewPane.center(" + x + ", " + y + ") - (" + origin.x + "," + origin.y + ")" + "(W:" + this.getWidth() + ", H:"+ this.getHeight() + ")");
+		// System.out.println("ViewPane.center(" + x + ", " + y + ") - (" + origin.x + "," + origin.y + ")" + "(W:" + this.getWidth() + ", H:"+ this.getHeight() + ")");
 		origin.x = this.getWidth()/2.0D - (x - origin.x);
 		origin.y = this.getHeight()/2.0D - (y - origin.y);
 	}
@@ -235,7 +235,7 @@ public abstract class ViewPane extends JPanel {
 	       	scale *= ZOOM_INCREMENT;
 		origin.x = this.getWidth()/2.0D - ratio * (x - origin.x);
 		origin.y = this.getHeight()/2.0D - ratio * (y - origin.y);
-		System.out.println("Zoom(): scale=" + scale + " Zoom level " + zoomLevel );
+		// System.out.println("Zoom(): scale=" + scale + " Zoom level " + zoomLevel );
 		zoom = true;
 	}
 
@@ -247,7 +247,7 @@ public abstract class ViewPane extends JPanel {
 	        scale /= ZOOM_INCREMENT;
 	        origin.x = this.getWidth()/2.0F - ratio * (x - origin.x);
 	        origin.y = this.getHeight()/2.0F - ratio * (y - origin.y);
-		System.out.println("Unzoom(): scale=" + scale + " Zoom level " + zoomLevel);
+		// System.out.println("Unzoom(): scale=" + scale + " Zoom level " + zoomLevel);
 		zoom = true;
 	}	
 
@@ -275,7 +275,7 @@ public abstract class ViewPane extends JPanel {
 
 	protected void drawDimensions(Graphics2D g2){
 
-		//System.out.println("Dimensions array contains " + dimensions.size() + " elements.");
+		//// System.out.println("Dimensions array contains " + dimensions.size() + " elements.");
 
 		g2.setColor(Color.BLUE);
 		for (Measure m: dimensions){
@@ -299,6 +299,16 @@ public abstract class ViewPane extends JPanel {
 		g.setTransform( savedAft );
 	}
 
+	protected void drawString( Graphics2D g, String s, double x, double y){
+		
+		AffineTransform savedAft = g.getTransform();
+		g.translate( x, y );
+		g.scale(1D, -1D);
+		g.translate( -x, -y);
+		g.drawString( s, (float) x+3F, (float) y+3f);
+		g.setTransform( savedAft );
+	}
+
 
 	private class LeftScrollActionHandler extends AbstractAction {
 
@@ -310,7 +320,7 @@ public abstract class ViewPane extends JPanel {
 
 		public void actionPerformed( ActionEvent e){
 			
-			System.out.println("Action:" + e.getActionCommand());
+			// System.out.println("Action:" + e.getActionCommand());
 			vp.scroll(-1, 0);
 			vp.repaint();
 		}
@@ -326,7 +336,7 @@ public abstract class ViewPane extends JPanel {
 
 		public void actionPerformed( ActionEvent e){
 			
-			System.out.println("Action:" + e.getActionCommand());
+			// System.out.println("Action:" + e.getActionCommand());
 			vp.scroll(1, 0);
 			vp.repaint();
 		}
@@ -342,7 +352,7 @@ public abstract class ViewPane extends JPanel {
 
 		public void actionPerformed( ActionEvent e){
 			
-			System.out.println("Action:" + e.getActionCommand());
+			// System.out.println("Action:" + e.getActionCommand());
 			vp.scroll(0, -1);
 			vp.repaint();
 		}
@@ -357,7 +367,7 @@ public abstract class ViewPane extends JPanel {
 
 		public void actionPerformed( ActionEvent e){
 			
-			System.out.println("Action:" + e.getActionCommand());
+			// System.out.println("Action:" + e.getActionCommand());
 			vp.scroll(0, 1);
 			vp.repaint();
 		}
