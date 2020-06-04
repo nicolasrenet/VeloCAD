@@ -97,6 +97,7 @@ public class Geometry {
 		Sf("Sf"),
 		Tb("Tb"),
 		Tf("Tf"),
+		Tm("Tm"),
 		Ub("Ub"),
 		Uf("Uf"),
 		Vb("Vb"),
@@ -142,7 +143,7 @@ public class Geometry {
 		Stmr("Stmr"),
 		Stmf("Stmf"),
 		Stur("Stur"),
-		-Stuf("Stuf"),
+		Stuf("Stuf"),
 		Stlr("Stlr"),
 		Stlf("Stlf"),
 		Stbl("Stbl"),
@@ -246,7 +247,7 @@ public class Geometry {
 		BBG(Category.FT_TRIANGLE, "Bottom bracket gauge", 2.1082D, 1D, 3D),
 		BBW(Category.FT_TRIANGLE, "Bottom bracket width", 68.5D, 65D, 75D),
 		BBL(Category.COMPONENTS, "Bottom bracket length", 110D, 107D, 122D),
-		BBCSO(Category.RR_TRIANGLE, "Bottom bracket chainstay offset", 15D, 5D, 37D),
+		BBCSO(Category.RR_TRIANGLE, "Bottom bracket chainstay offset", 15D, 5D, 40D),
 		CSODS(Category.RR_TRIANGLE, "Chainstay ø (start)", 22.2D, 20D, 30D),
 		CSODE(Category.RR_TRIANGLE, "Chainstay ø (end)", 12.7D, 10D, 30D),
 		RAW(Category.RR_TRIANGLE, "Rear axle width", 130D, 110D, 175D),
@@ -332,20 +333,22 @@ public class Geometry {
 
 		BB_HEIGHT("BB height", "Bottom bracket height (above ground)", true),
 		PEDAL_CLEARANCE("Pedal clearance", "Pedal height (above ground)", true),
-		HJX("Henry James X", "Henry James X datum (BB to steerer axis", true),
-		HJY("Henry James Y", "Henry James Y datum (from HJX to bottom of head tube", true),
+		HJX("Henry James X", "Henry James X datum (BB to steerer axis (for jig setup)", true),
+		HJY("Henry James Y", "Henry James Y datum (from HJX to bottom of head tube - for jig setup)", true),
+		FORK_PROJECTION("Fork projection", "Distance from fork crown race to projection of front axle on steerer axis", true),
+		CHAINSTAY_X_PROJ("Chainstay x-axis projection", "Chainstay x-axis projection (for jig setup)", true),
 		TOE_OVERLAP("Toe overlap", "A (crude) measure of toe overlap", true),
 		WHEELBASE("Wheelbase", "Distance between axles", true),
 		STANDOVER("Standover", "Height of the (virtual) horizontal tube", true),
 		STEERER_LENGTH("Steerer length", "Minimal length of the steerer tube", true),
 		TRAIL("Trail", "Trail", true),
-		CROSS_MEMBER_LENGTH("Cross-member length", "Cross-member length (for mixte frames)"),
-		BB_TO_FRONT("BB to front axle", "BB to front axle distance (along x-axis)"),
-		SADDLE_HEIGHT("Saddle height", "Saddle height"),
 		CHAINSTAY_ANGLE_CURVED("Chainstay angle (curved CS)", "Chainstay angle with frame axis (curved CS)", true),
 		CHAINSTAY_ANGLE_STRAIGHT("Chainstay angle (straight CS)", "Chainstay angle with frame axis (straight CS)", true),
 		CRANK_CLEARANCE_CURVED("Crank/CS clearance (curved CS)", "Crank/CS clearance (curved CS)", true),
-		CRANK_CLEARANCE_STRAIGHT("Crank/CS clearance (straight CS)", "Crank/CS clearance (straight CS)", true);
+		CRANK_CLEARANCE_STRAIGHT("Crank/CS clearance (straight CS)", "Crank/CS clearance (straight CS)", true),
+		CROSS_MEMBER_LENGTH("Cross-member length", "Cross-member length (for mixte frames)"),
+		BB_TO_FRONT("BB to front axle", "BB to front axle distance (along x-axis)"),
+		SADDLE_HEIGHT("Saddle height", "Saddle height");
 
 
 		private String longDesc;
@@ -840,19 +843,14 @@ public class Geometry {
 
 		indicators.put(INDICATOR.STANDOVER, indicators.get(INDICATOR.BB_HEIGHT) + parameters.get(Prm.STL)*cos_ALPHAc);
 		indicators.put(INDICATOR.BB_TO_FRONT, getPoint(W.A).distance(getPoint(W.G)));
+		indicators.put(INDICATOR.CHAINSTAY_X_PROJ, getPoint(W.A).getX() - getPoint(W.E).getX());
+		indicators.put(INDICATOR.FORK_PROJECTION, getPoint(W.Tm).distance( getPoint(W.Gps)));
 
 		
-		//indicators.put(INDICATOR.TOE_OVERLAP, indicators.put(INDICATOR.BB_TO_FRONT - (parameters.get(Prm.WR) + parameters.get(Prm.CL)) - (parameters.get(Prm.FFL) + parameters.get(Prm.FC)));
-		//indicators.put(INDICATOR.TOE_OVERLAP, compute_toe_overlap());
-
 
 		indicators.put(INDICATOR.SADDLE_HEIGHT, get_lemonds_saddle_height( parameters.get(Prm.PBH) ));
 
 
-		// System.out.printf("Trail=%f Wheelbase=%f Standover=%f BB height=%f Pedal clearance=%f Overlap=%f\n",
-		//	indicators.get(INDICATOR.TRAIL), indicators.get(INDICATOR.WHEELBASE), indicators.get(INDICATOR.STANDOVER), indicators.get(INDICATOR.BB_HEIGHT), indicators.get(INDICATOR.PEDAL_CLEARANCE), indicators.get(INDICATOR.TOE_OVERLAP));
-
-		
 		// Distance to centerline of seatstay bridge (5mm is leather washer + boss)
 		
 		double bridge_diameter = 11.2;
@@ -1212,6 +1210,7 @@ public class Geometry {
 			getPoint(W.Sb).getY() - sin_BETA * parameters.get(Prm.BHS));
 		getPoint(W.Tf).setLocation( getPoint(W.Tb).getX() + parameters.get(Prm.HTOD) * sin_BETA,
 			getPoint(W.Tb).getY() + parameters.get(Prm.HTOD) * cos_BETA);
+		getPoint(W.Tm).setLocation( (getPoint(W.Tb).getX()+getPoint(W.Tf).getX())/2.0, (getPoint(W.Tb).getY()+getPoint(W.Tf).getY())/2.0);
 
 		tmp_pt = intersect( tan_BETAc, slope_point(tan_BETAc, getPoint(W.Tf)),
 				-Math.tan(parameters.get(Prm.BETA)-Math.PI/6), slope_point(-Math.tan(parameters.get(Prm.BETA)-Math.PI/6), getPoint(W.Sf)));
@@ -1710,15 +1709,6 @@ public class Geometry {
 
 	private void compute_rear_fork_distances(){
 	
-		//double xs = getPoint(W.rF).getX() - getPoint(W.rG).getX();
-		//double ys = getPoint(W.rF).getY() - getPoint(W.rG).getY();
-		//double xc1 = getPoint(W.rF).getX() - getPoint(W.rJ).getX();
-		//double yc1 = getPoint(W.rF).getY() - getPoint(W.rJ).getY();
-		//double xc2 = getPoint(W.rJ).getX() - getPoint(W.rG).getX();
-		//double yc2 = getPoint(W.rJ).getY() - getPoint(W.rG).getY();
-		//double xc4 = getPoint(W.rFr).getX() - getPoint(W.rGr).getX();
-		//double yc4 = getPoint(W.rFr).getY() - getPoint(W.rGr).getY();
-		
 		// Angle for straight chainstay (center)
 		indicators.put(INDICATOR.CHAINSTAY_ANGLE_STRAIGHT, Math.atan((getPoint(W.rF).getX() - getPoint(W.rG).getX()) / (getPoint(W.rF).getY() - getPoint(W.rG).getY()) ));
 		// Angle for curved chainstay (center)
