@@ -11,6 +11,12 @@ import java.util.List;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.awt.PdfGraphics2D;
 
 public final class SideViewPane extends ViewPane {
 
@@ -32,7 +38,7 @@ public final class SideViewPane extends ViewPane {
 	protected void setDimensions(){
 		// System.out.println("Adding dimensions...");
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.A, Geometry.W.D, Cote.Position.SOUTH ).offset(40).build());
-		this.dimensions.add( new Cote.Builder( jd, Geometry.W.E, Geometry.W.B, Cote.Position.SOUTH ).offset(30).build());
+		this.dimensions.add( new Cote.Builder( jd, Geometry.W.E, Geometry.W.Bs, Cote.Position.SOUTH ).offset(30).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.E, Geometry.W.A, Cote.Position.SOUTH ).offset(40D).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.Gp, Geometry.W.Kp, Cote.Position.SOUTH).offset(20D).minZoomLevel(1).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.Aom, Geometry.W.Ai, Cote.Position.SOUTH).offset(20D).minZoomLevel(1).build());
@@ -57,6 +63,7 @@ public final class SideViewPane extends ViewPane {
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.HJamesY, Geometry.W.HJamesX, Cote.Position.SOUTH).offset(40).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.A, Geometry.W.HJamesX, Cote.Position.SOUTH).offset(40).build());
 		this.dimensions.add( new Cote.Builder( jd, Geometry.W.Stbh, Geometry.W.F, Cote.Position.NORTH).offset(60D).build());
+		this.dimensions.add( new Cote.Builder( jd, Geometry.W.Fl, Geometry.W.G, Cote.Position.NORTH).offset(60D).build());
 	}
 
 
@@ -628,8 +635,8 @@ public final class SideViewPane extends ViewPane {
 		Point2D orig = new Point2D.Double( jd.getPoint( Geometry.W.A ).getX()-450, jd.getPoint( Geometry.W.A ).getY()-30);
 		gp.moveTo( orig.getX(), orig.getY() );
 		gp.lineTo( orig.getX() + 200, orig.getY() );
-		gp.lineTo( orig.getX() + 200, orig.getY()-150 );
-		gp.lineTo( orig.getX(), orig.getY()-150 );
+		gp.lineTo( orig.getX() + 200, orig.getY()-170 );
+		gp.lineTo( orig.getX(), orig.getY()-170 );
 		gp.lineTo( orig.getX(), orig.getY());
 		g.draw(gp);
 
@@ -648,5 +655,49 @@ public final class SideViewPane extends ViewPane {
 		}
 
 	}
+
+	public void toPdf() throws IOException, DocumentException {
+		// System.out.println("Export to PDF");
+
+		com.itextpdf.text.Rectangle rect = PageSize.A0;
+		//double widthOffset = .8D;
+		//double heightOffset = .8D;
+		double widthOffset = .75D;
+		double heightOffset = .6D;
+		double fold = 1; 
+
+		// System.out.println("PDF height: " + rect.getHeight() + " - PDF length: " + rect.getWidth() );
+
+		Document document = new Document( rect );
+
+		PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream( "main_view.pdf" ));
+
+		document.open();    
+
+		PdfContentByte cb = writer.getDirectContent();
+
+		Graphics2D g2 = new PdfGraphics2D( cb, rect.getWidth(), rect.getHeight());
+
+		double ratio =  72D/25.4 * fold; // mm to pt conversion + page reduction
+
+		// By defaut, the graphic (0,0) point matches the corner of the page: hence the offset
+		aft = new AffineTransform(ratio, 0D, 0D, -ratio, rect.getWidth() * widthOffset, rect.getHeight() * heightOffset );
+		
+		g2.transform(aft);
+
+		g2.rotate( Math.PI/2.0D );
+		
+		g2.setColor(Color.black);
+
+		if (toDraw.contains( Layer.CONTOURS )) drawContours(g2);
+		if (toDraw.contains( Layer.SCHEMATICS )) drawSchematics(g2);
+		if (toDraw.contains( Layer.DIMENSIONS )){ drawDimensions(g2); }
+		g2.setFont( new Font(g2.getFont().getName(), g2.getFont().getStyle(), g2.getFont().getSize()/2));
+		if (toDraw.contains( Layer.POINTS )){ drawPoints(g2); }
+
+		g2.dispose(); 
+		document.close();
+	}
+
 }
 

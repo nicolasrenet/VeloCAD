@@ -47,7 +47,7 @@ public abstract class ViewPane extends JPanel {
 
 	private static boolean zoom = false;
 
-	private static Set<Layer> toDraw = EnumSet.of( Layer.SCHEMATICS,  Layer.CONTOURS, Layer.POINTS, Layer.DIMENSIONS );
+	protected static Set<Layer> toDraw = EnumSet.of( Layer.SCHEMATICS,  Layer.CONTOURS, Layer.POINTS, Layer.DIMENSIONS );
 
 	protected boolean mouseIn = false;
 	//===========================================================================
@@ -162,25 +162,18 @@ public abstract class ViewPane extends JPanel {
 
 	}
 
-	public void toPdf(String fileName, String psz) throws IOException, DocumentException {
+	public abstract void toPdf() throws IOException, DocumentException;
+
+
+	public void toPdfFork(String fileName) throws IOException, DocumentException {
 		// System.out.println("Export to PDF");
 
-		com.itextpdf.text.Rectangle rect = PageSize.A0;
+		com.itextpdf.text.Rectangle rect = PageSize.A2;
 		//double widthOffset = .8D;
 		//double heightOffset = .8D;
-		double widthOffset = .75D;
-		double heightOffset = .6D;
+		double widthOffset = -.7D;
+		double heightOffset = .9D;
 		double fold = 1; 
-
-		if (psz == "A4"){
-				rect = PageSize.A4;
-				widthOffset = .5;
-				heightOffset = .05;
-				fold = 1D;
-
-		}
-
-
 
 		// System.out.println("PDF height: " + rect.getHeight() + " - PDF length: " + rect.getWidth() );
 
@@ -194,6 +187,8 @@ public abstract class ViewPane extends JPanel {
 
 		Graphics2D g2 = new PdfGraphics2D( cb, rect.getWidth(), rect.getHeight());
 
+		defaultStroke = new BasicStroke((float) (.25F/scale));
+
 		double ratio =  72D/25.4 * fold; // mm to pt conversion + page reduction
 
 		// By defaut, the graphic (0,0) point matches the corner of the page: hence the offset
@@ -201,7 +196,7 @@ public abstract class ViewPane extends JPanel {
 		
 		g2.transform(aft);
 
-		g2.rotate( Math.PI/2.0D );
+		//g2.rotate( Math.PI/2.0D );
 		
 		g2.setColor(Color.black);
 
@@ -214,6 +209,7 @@ public abstract class ViewPane extends JPanel {
 		g2.dispose(); 
 		document.close();
 	}
+
 
 	public void center(int x, int y){
 		// System.out.println("ViewPane.center(" + x + ", " + y + ") - (" + origin.x + "," + origin.y + ")" + "(W:" + this.getWidth() + ", H:"+ this.getHeight() + ")");

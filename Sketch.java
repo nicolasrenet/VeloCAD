@@ -75,6 +75,8 @@ public class Sketch implements ActionListener {
 
 		MenuItemView pdfMenuItem = new MenuItemView("Export to PDF", "menu.item.topdf", presenter, this);
 		menu.add( pdfMenuItem);
+		MenuItemView forkPdfMenuItem = new MenuItemView("Export fork to PDF", "menu.item.forktopdf", presenter, this);
+		menu.add( forkPdfMenuItem);
 		MenuItemView saveMenuItem = new MenuItemView("Save configuration","menu.item.saveconfig", presenter, this);
 		menu.add( saveMenuItem);
 		MenuItemView saveAsMenuItem = new MenuItemView("Save as...","menu.item.saveasconfig", presenter, this);

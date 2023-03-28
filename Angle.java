@@ -73,16 +73,20 @@ public class Angle extends Measure {
 	}
 
 
+	public static double getAngle(Point2D ctr, Point2D x, Point2D y){
+		
+		double a = x.distance( y );
+		double b = ctr.distance( x );
+		double c = ctr.distance( y );
+		
+
+		return (Double) 2.0D * Math.atan( Math.sqrt(( a*a - (b - c)*(b - c)) / ((b + c)*(b + c) - a * a )));
+	}
 	
 	@Override
 	public void update(){
 
-		double a = start.distance( end );
-		double b = center.distance( start );
-		double c = center.distance( end );
-
-		value = 2.0D * Math.atan( Math.sqrt(( a*a - (b - c)*(b - c)) / ((b + c)*(b + c) - a * a )));
-
+		value = getAngle(center, start, end);
 
 		double yDiff = start.getY()-center.getY();
 		double xDiff = start.getX()-center.getX();
@@ -140,7 +144,7 @@ public class Angle extends Measure {
 		
 	}
 
-	private double degrees(double rad){
+	public static double degrees(double rad){
 		return rad / Math.PI * 180.0D;
 	}
 

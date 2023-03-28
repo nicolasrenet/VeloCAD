@@ -335,7 +335,8 @@ public class Geometry {
 		PEDAL_CLEARANCE("Pedal clearance", "Pedal height (above ground)", true),
 		HJX("Henry James X", "Henry James X datum (BB to steerer axis (for jig setup)", true),
 		HJY("Henry James Y", "Henry James Y datum (from HJX to bottom of head tube - for jig setup)", true),
-		FORK_PROJECTION("Fork projection", "Distance from fork crown race to projection of front axle on steerer axis", true),
+		CHAINSTAY_LENGTH_HORIZONTAL("Chainstay length (horiz.)",  "Horizontal projection of the chainstay - for jig setup", true),
+		FORK_ANVIL_X("Fork projection (Anvil X)", "Distance from crown race sit to projection of front axle on steerer axis (X on the Anvil fork jig", true),
 		CHAINSTAY_X_PROJ("Chainstay x-axis projection", "Chainstay x-axis projection (for jig setup)", true),
 		TOE_OVERLAP("Toe overlap", "A (crude) measure of toe overlap", true),
 		WHEELBASE("Wheelbase", "Distance between axles", true),
@@ -346,6 +347,7 @@ public class Geometry {
 		CHAINSTAY_ANGLE_STRAIGHT("Chainstay angle (straight CS)", "Chainstay angle with frame axis (straight CS)", true),
 		CRANK_CLEARANCE_CURVED("Crank/CS clearance (curved CS)", "Crank/CS clearance (curved CS)", true),
 		CRANK_CLEARANCE_STRAIGHT("Crank/CS clearance (straight CS)", "Crank/CS clearance (straight CS)", true),
+		BOTTOM_LUG_ANGLE("Bottom Lug Angle", "Bottom lug angle", true),
 		CROSS_MEMBER_LENGTH("Cross-member length", "Cross-member length (for mixte frames)"),
 		BB_TO_FRONT("BB to front axle", "BB to front axle distance (along x-axis)"),
 		SADDLE_HEIGHT("Saddle height", "Saddle height");
@@ -585,7 +587,7 @@ public class Geometry {
 			case FBR:
 				v *= 2.54D * 10.0 ;
 				break;
-			case STL: case CSL: case TTL: case drop: case FR: case FFL: case SSLL:
+			case STL: case CSL: case TTL: case drop: case FFL: case SSLL:
 				v *= 10.0D ;
 				break;
 			default:
@@ -620,7 +622,7 @@ public class Geometry {
 				return parameters.get(p) * 180.0D / Math.PI ;
 			case FBR:
 				return (parameters.get(p) / 2.54D) / 10.0;
-			case STL: case CSL: case TTL: case drop: case FR: case FFL: case SSLL:
+			case STL: case CSL: case TTL: case drop: case FFL: case SSLL:
 				return parameters.get(p) / 10.0D;
 			default:
 				return parameters.get(p);
@@ -844,7 +846,9 @@ public class Geometry {
 		indicators.put(INDICATOR.STANDOVER, indicators.get(INDICATOR.BB_HEIGHT) + parameters.get(Prm.STL)*cos_ALPHAc);
 		indicators.put(INDICATOR.BB_TO_FRONT, getPoint(W.A).distance(getPoint(W.G)));
 		indicators.put(INDICATOR.CHAINSTAY_X_PROJ, getPoint(W.A).getX() - getPoint(W.E).getX());
-		indicators.put(INDICATOR.FORK_PROJECTION, getPoint(W.Tm).distance( getPoint(W.Gps)));
+		indicators.put(INDICATOR.FORK_ANVIL_X, getPoint(W.Tm).distance( getPoint(W.Gps)));
+		indicators.put(INDICATOR.BOTTOM_LUG_ANGLE, Angle.degrees( Math.PI-Angle.getAngle(getPoint(W.D), getPoint(W.A), getPoint(W.C))));
+		indicators.put(INDICATOR.CHAINSTAY_LENGTH_HORIZONTAL, getPoint(W.A).getX()-getPoint(W.E).getX());
 
 		
 
@@ -1650,6 +1654,7 @@ public class Geometry {
 		// Calculating J and Jl, on bisector of angles[Fl]-Jl-Gl
 		Double angle_b1 = (((Math.PI/2.0) - angle_mu) - angle_a1) / 2.0 ;// bisector angle
 
+		// TO-DO: unclear?? rJ and rJr have the same location?
 		getPoint(W.rJ).setLocation( 
 			getPoint(W.rJl).getX() + 2.0 * hCSODM * Math.sin(angle_b1),
 			getPoint(W.rJl).getY() - 2.0 * hCSODM * Math.cos(angle_b1));
@@ -1710,9 +1715,9 @@ public class Geometry {
 	private void compute_rear_fork_distances(){
 	
 		// Angle for straight chainstay (center)
-		indicators.put(INDICATOR.CHAINSTAY_ANGLE_STRAIGHT, Math.atan((getPoint(W.rF).getX() - getPoint(W.rG).getX()) / (getPoint(W.rF).getY() - getPoint(W.rG).getY()) ));
+		indicators.put(INDICATOR.CHAINSTAY_ANGLE_STRAIGHT, Angle.degrees( Math.atan((getPoint(W.rF).getX() - getPoint(W.rG).getX()) / (getPoint(W.rF).getY() - getPoint(W.rG).getY()) )));
 		// Angle for curved chainstay (center)
-		indicators.put(INDICATOR.CHAINSTAY_ANGLE_CURVED, Math.atan((getPoint(W.rF).getX() - getPoint(W.rJ).getX()) / (getPoint(W.rF).getY() - getPoint(W.rJ).getY())));
+		indicators.put(INDICATOR.CHAINSTAY_ANGLE_CURVED, Angle.degrees( Math.atan((getPoint(W.rF).getX() - getPoint(W.rJ).getX()) / (getPoint(W.rF).getY() - getPoint(W.rJ).getY()))));
 
 		// Crank clearance for straight chainstay
 		indicators.put(INDICATOR.CRANK_CLEARANCE_STRAIGHT, distance_to_segment(getPoint(W.rMl), getPoint(W.rGr), getPoint(W.rFr)) );
@@ -1753,9 +1758,6 @@ public class Geometry {
 		return pbh * .883;
 	}
 
-	private Double degrees( Double a ){
-		return a/Math.PI*180.0;
-	}
 }
 
 

@@ -8,6 +8,12 @@ import java.awt.event.MouseListener;
 import javax.swing.JPanel;
 import java.lang.Math;
 import java.util.List;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.awt.PdfGraphics2D;
 
 
 public final class RearViewPane extends ViewPane {
@@ -153,6 +159,68 @@ public final class RearViewPane extends ViewPane {
 		}
 
 		g.setColor(Color.BLACK);
+	}
+
+
+
+	public void toPdf() throws IOException, DocumentException {
+		// System.out.println("Export to PDF");
+
+		com.itextpdf.text.Rectangle rect = PageSize.A4;
+		//double widthOffset = .8D;
+		//double heightOffset = .8D;
+
+		int pageCount = 1;
+		// first page
+		double widthOffset = .5;
+		double heightOffset = .05;
+		double fold = 1; 
+
+
+
+		// System.out.println("PDF height: " + rect.getHeight() + " - PDF length: " + rect.getWidth() );
+
+		while (pageCount < 3){
+
+			Document document = new Document( rect );
+
+			if (pageCount == 2){
+				widthOffset = .5;
+				heightOffset = -.5;
+			}
+
+			PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream( "rear_view_" + pageCount + ".pdf" ));
+
+			document.open();    
+
+			PdfContentByte cb = writer.getDirectContent();
+
+			Graphics2D g2 = new PdfGraphics2D( cb, rect.getWidth(), rect.getHeight());
+
+			double ratio =  72D/25.4 * fold; // mm to pt conversion + page reduction
+
+			// By defaut, the graphic (0,0) point matches the corner of the page: hence the offset
+			aft = new AffineTransform(ratio, 0D, 0D, -ratio, rect.getWidth() * widthOffset, rect.getHeight() * heightOffset );
+			
+			g2.transform(aft);
+
+			g2.rotate( Math.PI/2.0D );
+			
+			g2.setColor(Color.black);
+
+			if (toDraw.contains( Layer.CONTOURS )) drawContours(g2);
+			if (toDraw.contains( Layer.SCHEMATICS )) drawSchematics(g2);
+			if (toDraw.contains( Layer.DIMENSIONS )){ drawDimensions(g2); }
+			g2.setFont( new Font(g2.getFont().getName(), g2.getFont().getStyle(), g2.getFont().getSize()/2));
+			if (toDraw.contains( Layer.POINTS )){ drawPoints(g2); }
+
+			g2.dispose(); 
+			document.close();
+
+			pageCount++;
+		}
+
+
 	}
 }
 

@@ -69,15 +69,18 @@ public class Presenter {
 
 	public void menuAction(String id){
 		System.out.println("menuAction("  + id + ")");
-		if (id.equals( "menu.item.topdf" )){
-			int fileCount = 1;
+		if (id.equals( "menu.item.topdf") || id.equals("menu.item.forktopdf")){
 			try {
-				for (JPanel jp: observers){
-					ViewPane vp = (ViewPane) jp;
-					String pageSize = "A0";
-					if (fileCount==2){ pageSize = "A1"; }
-					vp.toPdf(String.valueOf("frameset_" + fileCount + ".pdf"),pageSize);
-					fileCount++;
+				if (id.equals("menu.item.forktopdf")){
+					// main view (side)
+					ViewPane vp = (ViewPane) observers.get(0);
+					vp.toPdfFork( "frameset_fork.pdf");
+				
+				} else {
+					for (JPanel jp: observers){
+						ViewPane vp = (ViewPane) jp;
+						vp.toPdf();
+					}
 				}
 			} catch (IOException e){
 				System.out.println(e);
